@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NeurO Chess </title>
+    <!-- Favicon -->
+    <link rel="icon" href="https://img.icons8.com/nolan/1200/chess-com.jpg" type="image/jpeg">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;900&family=Space+Grotesk:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1" rel="stylesheet">
+
+    <style>
+        body { touch-action: manipulation; -webkit-user-select: none; user-select: none; background-color: #f8f9fa; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        
+        @keyframes scrollGrid { 0% { background-position: 0px 0px; } 100% { background-position: 64px 64px; } }
+        @keyframes pulseBg { 0%, 100% { background-color: #f8f9fa; } 50% { background-color: #f1f3f5; } }
+        @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 25% { transform: translateY(-10px) rotate(2deg); } 75% { transform: translateY(10px) rotate(-2deg); } }
+        @keyframes glitch { 0% { clip-path: inset(40% 0 61% 0); transform: translate(-2px, 2px); } 20% { clip-path: inset(92% 0 1% 0); transform: translate(1px, -2px); } 40% { clip-path: inset(43% 0 1% 0); transform: translate(-1px, 2px); } 60% { clip-path: inset(25% 0 58% 0); transform: translate(2px, 1px); } 80% { clip-path: inset(54% 0 7% 0); transform: translate(-2px, -1px); } 100% { clip-path: inset(58% 0 43% 0); transform: translate(1px, 2px); } }
+        
+        @keyframes stamp {
+          0% { transform: scale(3) rotate(15deg); opacity: 0; text-shadow: 0 0 20px rgba(255,87,34,1); }
+          50% { transform: scale(0.9) rotate(-2deg); opacity: 1; }
+          100% { transform: scale(1) rotate(-3deg); opacity: 1; text-shadow: none; }
+        }
+        @keyframes slideRightStagger {
+          0% { transform: translateX(-40px); opacity: 0; }
+          100% { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes typing {
+          from { max-width: 0 }
+          to { max-width: 100% }
+        }
+        @keyframes microFlicker {
+          0% { opacity: 0; }
+          5% { opacity: 0.05; }
+          10% { opacity: 0; }
+          100% { opacity: 0; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        .bg-blueprint-grid { 
+          background-color: #f8f9fa; 
+          background-image: linear-gradient(rgba(59, 130, 246, 0.1) 2px, transparent 2px), linear-gradient(90deg, rgba(59, 130, 246, 0.1) 2px, transparent 2px); 
+          background-size: 64px 64px; 
+          animation: scrollGrid 4s linear infinite, pulseBg 8s ease-in-out infinite;
+        }
+        .scanlines::before {
+          content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+          background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%);
+          background-size: 100% 4px; z-index: 40; pointer-events: none;
+        }
+        .crt-flicker::after {
+          content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+          background: rgba(0, 0, 0, 0.2); z-index: 50; pointer-events: none;
+          animation: microFlicker 3s infinite;
+        }
+        .glitch-text { position: relative; }
+        .glitch-text::before, .glitch-text::after {
+          content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: transparent;
+        }
+        .glitch-text::before { left: 2px; text-shadow: -1px 0 #3B82F6; animation: glitch 2s infinite linear alternate-reverse; }
+        .glitch-text::after { left: -2px; text-shadow: -1px 0 #00E676; animation: glitch 3s infinite linear alternate-reverse; }
+        .float-anim { animation: float 6s ease-in-out infinite; }
+        
+        .anim-stamp { animation: stamp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .slide-stagger { opacity: 0; animation: slideRightStagger 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out forwards; }
+
+        .type-effect {
+          display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom;
+          animation: typing 1.5s steps(30, end) forwards;
+        }
+        
+        .brutalist-btn { transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.1s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+        .brutalist-btn:active { transform: translate(4px, 4px) !important; box-shadow: 0px 0px 0px 0px rgba(0,0,0,1) !important; }
+
+        .marquee-content { display: flex; animation: marquee 20s linear infinite; }
+
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; background: #00E676; border: 4px solid #000000; cursor: pointer; border-radius: 0; }
+        input[type="range"] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 12px; cursor: pointer; background: #000000; border: 2px solid #000000; }
+    </style>
+</head>
+<body class="bg-blueprint-grid text-[#191c1d] scanlines crt-flicker">
+
+    <div id="boot-screen" class="fixed inset-0 min-h-screen bg-blueprint-grid flex items-center justify-center font-['Space_Grotesk'] text-[#191c1d] z-[200]">
+        <div class="flex flex-col items-center bg-[#ffffff] p-12 border-4 border-[#000000] shadow-[16px_16px_0px_0px_rgba(0,0,0,1)]">
+            <span class="material-symbols-outlined text-6xl mb-6 animate-spin text-[#000000]">sync</span>
+            <p class="font-black uppercase tracking-[0.3em] text-sm text-[#000000] glitch-text" data-text="BOOTING SYSTEM...">BOOTING SYSTEM...</p>
+        </div>
+    </div>
+
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden hidden md:block">
+        <div id="bg-cursor-x" class="absolute top-0 bottom-0 left-0 w-[2px] bg-[#3B82F6] opacity-30 transition-transform duration-75 ease-out"></div>
+        <div id="bg-cursor-y" class="absolute left-0 right-0 top-0 h-[2px] bg-[#3B82F6] opacity-30 transition-transform duration-75 ease-out"></div>
+        <div id="bg-cursor-box" class="absolute w-16 h-16 border-4 border-[#00E676] opacity-50 transition-transform duration-100 ease-out" style="margin-left: -32px; margin-top: -32px;"></div>
+    </div>
+
+    <header class="bg-[#ffffff] text-[#000000] flex justify-between items-center w-full px-6 h-16 sticky top-0 z-50 border-b-4 border-[#000000] lg:pl-72 shadow-[0px_4px_0px_0px_rgba(0,0,0,1)]">
+        <div class="font-['Space_Grotesk'] font-black text-xl tracking-tighter bg-[#00E676] px-2 border-2 border-[#000000] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] type-effect">NEURO_CHESS</div>
+        <nav class="hidden md:flex items-center gap-8 h-full">
+            <a onclick="navClick('PLAY')" id="nav-play-desktop" class="font-['Space_Grotesk'] font-black uppercase tracking-widest text-[0.6875rem] h-full flex items-center px-4 cursor-pointer transition-none bg-[#e1e3e4] border-x-4 border-[#000000]">PLAY</a>
+            <a onclick="navClick('ELOTEST')" id="nav-elotest-desktop" class="font-['Space_Grotesk'] font-black uppercase tracking-widest text-[0.6875rem] h-full flex items-center px-4 cursor-pointer transition-none hover:bg-[#f8f9fa]">ELO TEST</a>
+            <a onclick="navClick('ANALYSIS')" id="nav-analysis-desktop" class="font-['Space_Grotesk'] font-black uppercase tracking-widest text-[0.6875rem] h-full flex items-center px-4 cursor-pointer transition-none hover:bg-[#f8f9fa]">ANALYSIS</a>
+            <a onclick="navClick('TACTICS')" id="nav-tactics-desktop" class="font-['Space_Grotesk'] font-black uppercase tracking-widest text-[0.6875rem] h-full flex items-center px-4 cursor-pointer transition-none hover:bg-[#f8f9fa]">TACTICS</a>
+        </nav>
+        <div class="flex items-center gap-4">
+            <button onclick="toggleSettings(true)" class="brutalist-btn p-2 border-2 border-[#000000] bg-[#ffffff] transition-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"><span class="material-symbols-outlined font-black">settings</span></button>
+        </div>
+    </header>
+
+    <aside class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-[#ffffff] border-r-4 border-[#000000] hidden lg:flex flex-col py-8 px-0 z-40 shadow-[4px_0px_0px_0px_rgba(0,0,0,1)]">
+        <div class="px-8 mb-12">
+            <div class="font-['Space_Grotesk'] font-black text-lg text-[#000000] bg-[#3B82F6] text-white inline-block px-2 border-2 border-[#000000] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] type-effect">STRATEGIC_UNIT</div>
+            <div class="font-['Space_Grotesk'] uppercase text-[0.75rem] tracking-tight text-[#000000] font-black mt-2 truncate">ALIAS // <span id="sidebar-alias"></span></div>
+        </div>
+        <nav class="flex-1 space-y-2 px-4">
+            <a onclick="navClick('PLAY')" id="nav-play-sidebar" class="flex items-center gap-4 px-4 py-4 font-['Space_Grotesk'] uppercase text-[0.75rem] tracking-tight font-black transition-none cursor-pointer border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] bg-[#000000] text-[#ffffff]">
+                <span class="material-symbols-outlined text-lg">grid_view</span><span>DASHBOARD</span>
+            </a>
+            <a onclick="navClick('MATCHES')" id="nav-matches-sidebar" class="flex items-center gap-4 px-4 py-4 font-['Space_Grotesk'] uppercase text-[0.75rem] tracking-tight font-black transition-none cursor-pointer border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] bg-[#ffffff] text-[#000000]">
+                <span class="material-symbols-outlined text-lg">swords</span><span>MATCHES</span>
+            </a>
+            <a onclick="navClick('ELOTEST')" id="nav-elotest-sidebar" class="flex items-center gap-4 px-4 py-4 font-['Space_Grotesk'] uppercase text-[0.75rem] tracking-tight font-black transition-none cursor-pointer border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] bg-[#ffffff] text-[#000000]">
+                <span class="material-symbols-outlined text-lg">speed</span><span>ELO TEST</span>
+            </a>
+            <a onclick="navClick('TACTICS')" id="nav-tactics-sidebar" class="flex items-center gap-4 px-4 py-4 font-['Space_Grotesk'] uppercase text-[0.75rem] tracking-tight font-black transition-none cursor-pointer border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] bg-[#ffffff] text-[#000000]">
+                <span class="material-symbols-outlined text-lg">crisis_alert</span><span>TACTICS</span>
+            </a>
+            <a onclick="navClick('ANALYSIS')" id="nav-analysis-sidebar" class="flex items-center gap-4 px-4 py-4 font-['Space_Grotesk'] uppercase text-[0.75rem] tracking-tight font-black transition-none cursor-pointer border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] bg-[#ffffff] text-[#000000]">
+                <span class="material-symbols-outlined text-lg">psychology</span><span>FREE ANALYSIS</span>
+            </a>
+        </nav>
+        <div class="px-8 mt-auto">
+            <div class="bg-[#ffffff] p-4 border-4 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <p class="text-[0.6rem] uppercase tracking-tighter text-[#000000] font-black mb-2">CALCULATED_ELO</p>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 border-2 border-[#000000] bg-[#FF5722] rounded-none"></span>
+                    <span class="font-['Space_Grotesk'] font-black text-xl" id="sidebar-elo"></span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <nav class="lg:hidden fixed bottom-0 left-0 w-full flex justify-around items-center h-16 pb-safe bg-[#ffffff] text-[#000000] border-t-4 border-[#000000] z-50">
+        <a onclick="navClick('PLAY')" id="nav-play-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-2 border-r-2 border-[#000000] flex-1 bg-[#e1e3e4]">
+            <span class="material-symbols-outlined">videogame_asset</span><span class="text-[0.55rem] tracking-[0.05rem]">PLAY</span>
+        </a>
+        <a onclick="navClick('MATCHES')" id="nav-matches-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
+            <span class="material-symbols-outlined">swords</span><span class="text-[0.55rem] tracking-[0.05rem]">MATCHES</span>
+        </a>
+        <a onclick="navClick('ELOTEST')" id="nav-elotest-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
+            <span class="material-symbols-outlined">speed</span><span class="text-[0.55rem] tracking-[0.05rem]">ELO TEST</span>
+        </a>
+        <a onclick="navClick('ANALYSIS')" id="nav-analysis-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
+            <span class="material-symbols-outlined">psychology</span><span class="text-[0.55rem] tracking-[0.05rem]">ANALYSIS</span>
+        </a>
+        <a onclick="toggleSettings(true)" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-2 flex-1 hover:bg-[#f8f9fa]">
+            <span class="material-symbols-outlined">settings</span><span class="text-[0.55rem] tracking-[0.05rem]">CONFIG</span>
+        </a>
+    </nav>
+
+    <div id="modal-settings" class="fixed inset-0 z-[100] bg-[#191c1d]/80 flex items-center justify-center p-4 backdrop-blur-sm hidden">
+        <div class="bg-[#f8f9fa] border-4 border-[#000000] p-8 max-w-md w-full shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] fade-in overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-center mb-8 border-b-4 border-[#000000] pb-4">
+                <h2 class="font-['Space_Grotesk'] font-black text-3xl uppercase tracking-tighter text-[#000000]">SYSTEM_CONFIG</h2>
+                <button onclick="toggleSettings(false)" class="bg-[#FF5722] text-[#000000] border-2 border-[#000000] p-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] transition-all">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <div class="slide-stagger delay-100">
+                    <p class="text-[0.65rem] font-bold uppercase tracking-widest text-[#4c616b] mb-2">AGENCY_ALIAS</p>
+                    <div class="flex items-stretch border-2 border-[#000000] bg-[#ffffff] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                        <div class="flex-1 font-mono font-bold text-lg p-3 text-[#000000] truncate" id="settings-alias"></div>
+                        <button onclick="scrambleAlias()" class="bg-[#00E676] px-4 border-l-2 border-[#000000] hover:bg-[#00C853] flex items-center justify-center transition-colors">
+                            <span class="material-symbols-outlined">casino</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="border-t-2 border-dashed border-[#c6c6c6] pt-6 slide-stagger delay-200">
+                    <p class="text-[0.65rem] font-bold uppercase tracking-widest text-[#4c616b] mb-2">BOARD_COLOR_PALETTE</p>
+                    <div class="flex gap-3 mb-6" id="color-palette-btns"></div>
+
+                    <p class="text-[0.65rem] font-bold uppercase tracking-widest text-[#4c616b] mb-2">PIECE_AESTHETIC</p>
+                    <div class="flex flex-wrap gap-2" id="piece-style-btns"></div>
+
+                    <p class="text-[0.65rem] font-bold uppercase tracking-widest text-[#4c616b] mb-2 mt-6">AUDIO_FEEDBACK</p>
+                    <div class="flex flex-wrap gap-2" id="audio-btns"></div>
+
+                    <p class="text-[0.65rem] font-bold uppercase tracking-widest text-[#4c616b] mb-2 mt-6">ENGINE_ASSIST_ARROW</p>
+                    <div class="flex flex-wrap gap-2" id="arrow-btns"></div>
+                </div>
+
+                <div class="border-t-2 border-dashed border-[#c6c6c6] pt-6 slide-stagger delay-300">
+                    <p class="text-[0.65rem] font-bold uppercase tracking-widest text-[#4c616b] mb-2">COMBAT_RECORD</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-[#edeeef] p-4 text-center border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                            <div class="font-['Space_Grotesk'] font-black text-3xl text-[#3B82F6]" id="settings-elo"></div>
+                            <div class="text-[0.6rem] font-bold uppercase tracking-widest mt-1 text-[#4c616b]">CALCULATED_ELO</div>
+                        </div>
+                        <div class="bg-[#edeeef] p-4 text-center border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                            <div class="font-['Space_Grotesk'] font-black text-3xl text-[#00E676]" id="settings-winrate">0%</div>
+                            <div class="text-[0.6rem] font-bold uppercase tracking-widest mt-1 text-[#4c616b]">WIN_RATE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-ai" class="fixed inset-0 z-[100] bg-[#191c1d]/80 flex items-center justify-center p-4 backdrop-blur-sm hidden">
+        <div class="bg-[#f8f9fa] border-4 border-[#000000] p-8 max-w-md w-full shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] fade-in">
+            <h2 class="font-['Space_Grotesk'] font-black text-3xl mb-6 text-[#000000]">AI_CONFIG</h2>
+            <div class="mb-6 slide-stagger delay-100">
+                <label class="text-[0.65rem] font-bold block mb-2 uppercase text-[#4c616b] tracking-widest">FACTION_SELECT</label>
+                <div class="flex border-2 border-[#000000] bg-[#ffffff] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" id="ai-color-btns"></div>
+            </div>
+            <div class="mb-8 slide-stagger delay-200">
+                <label class="flex justify-between items-center text-[0.65rem] font-bold mb-2 uppercase tracking-widest">
+                    <span class="text-[#4c616b]">ENGINE_DEPTH</span>
+                    <span class="text-[#000000] font-black bg-[#00E676] px-2 py-1 border-2 border-[#000000] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]" id="ai-level-disp">LVL 5</span>
+                </label>
+                <input type="range" min="1" max="15" value="5" id="ai-level-input" class="w-full" oninput="updateAiLevel(this.value)" />
+            </div>
+            <div class="flex gap-4 slide-stagger delay-300">
+                <button onclick="initializeCombat()" class="brutalist-btn flex-1 bg-[#00E676] text-[#000000] font-['Space_Grotesk'] font-bold py-4 border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-2 hover:bg-[#00C853]">INITIALIZE <span class="material-symbols-outlined">play_arrow</span></button>
+                <button onclick="toggleAiSetup(false)" class="brutalist-btn flex-1 border-2 border-[#000000] text-[#000000] font-['Space_Grotesk'] font-bold py-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-[#ffffff] hover:bg-[#e1e3e4]">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <main class="relative lg:ml-64 min-h-[calc(100vh-4rem)] pb-20 lg:pb-0 z-10">
+        
+        <div id="view-home">
+            <section class="relative pt-24 pb-32 px-6 lg:px-24 border-none text-[#191c1d]">
+                <div class="absolute top-20 left-[35%] w-24 h-24 border-4 border-[#3B82F6] opacity-30 float-anim hidden md:block"></div>
+                <div class="absolute bottom-32 right-[45%] w-16 h-16 bg-[#00E676] opacity-30 float-anim hidden md:block" style="animation-delay: 1s; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)"></div>
+                <div class="absolute top-1/3 left-1/4 w-8 h-8 bg-[#FF5722] rounded-full opacity-30 float-anim hidden md:block" style="animation-delay: 2s"></div>
+
+                <div class="grid lg:grid-cols-12 gap-12 items-start relative z-10 flex justify-center">
+                    <div class="lg:col-span-8 lg:col-start-3 w-full max-w-4xl bg-[#ffffff] border-4 border-[#000000] p-8 md:p-12 shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-2 bg-[#00E676] animate-pulse"></div>
+                        <div class="mb-6 inline-block bg-[#000000] text-[#00E676] px-4 py-2 font-['Space_Grotesk'] font-bold uppercase tracking-widest text-xs border-2 border-[#00E676] type-effect">
+                            SYSTEM_READY // VER 4.3.0
+                        </div>
+                        <h1 class="font-['Space_Grotesk'] font-black text-6xl md:text-8xl tracking-tighter mb-8 text-[#000000] glitch-text uppercase" data-text="NEURO_CHESS">
+                            NEURO_CHESS
+                        </h1>
+                        <p class="text-xl max-w-lg mb-12 text-[#000000] font-medium leading-relaxed bg-[#f8f9fa] p-4 border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] slide-stagger delay-100">
+                            Challenge the Stockfish V16 Engine offline or analyze complex positions locally. Highly animated tactical neo-brutalist aesthetic.
+                        </p>
+
+                        <div id="home-error" class="mb-8 p-4 bg-[#FF5722] text-[#000000] border-2 border-[#000000] font-black font-mono text-sm uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hidden"></div>
+
+                        <div class="flex flex-wrap gap-4">
+                            <button onclick="toggleAiSetup(true)" class="brutalist-btn slide-stagger delay-100 group relative bg-[#3B82F6] border-4 border-[#000000] text-[#ffffff] px-8 py-4 font-['Space_Grotesk'] font-black text-lg tracking-tight flex items-center gap-3 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-[#2563EB]">
+                                <span>VS COMPUTER</span><span class="material-symbols-outlined">memory</span>
+                            </button>
+                            <button onclick="navClick('ANALYSIS')" class="brutalist-btn slide-stagger delay-200 group relative bg-[#00E676] border-4 border-[#000000] text-[#000000] px-8 py-4 font-['Space_Grotesk'] font-black text-lg tracking-tight flex items-center gap-3 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-[#00C853]">
+                                <span>FREE ANALYSIS</span><span class="material-symbols-outlined">psychology</span>
+                            </button>
+                            <button onclick="navClick('TACTICS')" class="brutalist-btn slide-stagger delay-300 group relative bg-[#e1e3e4] border-4 border-[#000000] text-[#000000] px-8 py-4 font-['Space_Grotesk'] font-black text-lg tracking-tight flex items-center gap-3 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-[#d1d3d4]">
+                                <span>TACTICS DRILL</span><span class="material-symbols-outlined">crisis_alert</span>
+                            </button>
+                            <button onclick="navClick('ELOTEST')" class="brutalist-btn slide-stagger delay-300 group relative bg-[#191c1d] border-4 border-[#000000] text-[#ffffff] px-8 py-4 font-['Space_Grotesk'] font-black text-lg tracking-tight flex items-center gap-3 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-[#3c3b3c]">
+                                <span>EVALUATE ELO</span><span class="material-symbols-outlined">speed</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="bg-[#3B82F6] text-[#ffffff] py-4 overflow-hidden border-y-4 border-[#000000] whitespace-nowrap">
+                <div class="marquee-content gap-12 items-center" id="marquee-container"></div>
+            </div>
+
+            <section class="py-24 px-6 lg:px-24 border-none text-[#191c1d] relative z-10">
+                <div class="grid md:grid-cols-12 gap-4">
+                    <div class="md:col-span-8 bg-[#ffffff] border-4 border-[#000000] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-10 flex flex-col justify-between min-h-[400px]">
+                        <div>
+                            <span class="font-['Space_Grotesk'] text-xs font-bold uppercase tracking-widest text-[#3B82F6] block mb-4 type-effect">ENGINE_LOG_01</span>
+                            <h3 class="font-['Space_Grotesk'] font-black text-5xl mb-6 uppercase">Zero-Radius<br/>Architectural UI</h3>
+                        </div>
+                        <div class="max-w-md text-[#000000] font-medium leading-relaxed bg-[#f8f9fa] p-4 border-2 border-[#000000]">
+                            No rounded corners. No gradients. No soft shadows. Just raw, technical performance wrapped in an animative brutalist aesthetic that prioritizes clarity of thought.
+                        </div>
+                    </div>
+                    <div class="md:col-span-4 bg-[#00E676] text-[#000000] p-10 flex flex-col items-center justify-center text-center shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] border-4 border-[#000000]">
+                        <span class="material-symbols-outlined text-6xl mb-6">memory</span>
+                        <h3 class="font-['Space_Grotesk'] font-black text-3xl mb-4">INSTANT_TICK</h3>
+                        <p class="text-sm font-bold opacity-80">10ms tactical UI unblocking for every local move. Zero bounce. Zero delay.</p>
+                    </div>
+                    <div class="md:col-span-12 bg-[#000000] text-[#ffffff] border-4 border-[#000000] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-10 flex items-center">
+                        <div class="grid md:grid-cols-2 gap-12 w-full">
+                            <div>
+                                <span class="material-symbols-outlined text-4xl mb-4 text-[#3B82F6]">psychology</span>
+                                <h4 class="font-['Space_Grotesk'] font-black text-2xl mb-2 text-[#00E676]">STRATEGY_SYNC</h4>
+                                <p class="text-sm font-medium">Test hypotheses instantly using the built-in free analysis board. Map out lines without interference.</p>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined text-4xl mb-4 text-[#FF5722]">bolt</span>
+                                <h4 class="font-['Space_Grotesk'] font-black text-2xl mb-2 text-[#00E676]">LOCAL_COMPUTE</h4>
+                                <p class="text-sm font-medium">All logic runs client-side. No network lag. No server drops. Just you and the engine.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <footer class="bg-[#ffffff] py-12 px-6 lg:px-24 border-t-4 border-[#000000] text-[#191c1d] relative z-10">
+                <div class="flex flex-col md:flex-row justify-between gap-8">
+                    <div>
+                        <div class="font-['Space_Grotesk'] font-black text-xl mb-4 bg-[#00E676] inline-block px-2 border-2 border-[#000000]">NEURO_CHESS</div>
+                        <p class="font-bold text-xs max-w-xs mt-2">Technical brutalist chess simulation for high-stakes offline training. Designed for the 2D minimalist.</p>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-12">
+                        <div>
+                            <p class="font-['Space_Grotesk'] font-black text-[0.6rem] uppercase tracking-widest mb-4">SYSTEM</p>
+                            <ul class="space-y-2 text-xs font-bold text-[#4c616b]">
+                                <li><a class="hover:text-[#3B82F6]" href="#">CORE_LOGIC</a></li>
+                                <li><a class="hover:text-[#3B82F6]" href="#">OFFLINE_SPECS</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-span-2 md:col-span-1">
+                            <p class="font-['Space_Grotesk'] font-black text-[0.6rem] uppercase tracking-widest mb-4">CONNECT</p>
+                            <ul class="space-y-2 text-xs font-bold text-[#4c616b]">
+                                <li><a class="hover:text-[#3B82F6]" href="#">X_CHANNELS</a></li>
+                                <li><a class="hover:text-[#3B82F6]" href="#">DISCORD_SECURE</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-12 pt-12 border-t-4 border-[#000000] text-center">
+                    <p class="font-black text-[0.55rem] tracking-[0.8em] text-[#000000] uppercase">©2024 NEO-BRUTALISM // LOCAL_ONLY // UNIT_001</p>
+                </div>
+            </footer>
+        </div>
+
+        <div id="view-matches" class="hidden py-12 px-6 lg:px-24 w-full max-w-6xl mx-auto min-h-[calc(100vh-4rem)] flex flex-col text-[#191c1d] relative z-10">
+            <div class="mb-8 border-b-4 border-[#000000] pb-6 bg-[#ffffff] p-6 border-2 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] fade-in">
+                <h1 class="font-['Space_Grotesk'] font-black text-4xl uppercase tracking-tighter text-[#000000] flex items-center gap-4">
+                    <span class="material-symbols-outlined text-5xl text-[#000000]">history</span>
+                    COMBAT_ARCHIVE
+                </h1>
+                <p class="font-medium mt-2 text-[#4c616b]">Local memory cache of recent offline engagements.</p>
+            </div>
+            <div class="bg-[#ffffff] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] border-4 border-[#000000] fade-in" style="animation-delay: 200ms;">
+                <div class="grid grid-cols-4 gap-4 bg-[#000000] text-[#ffffff] p-4 font-['Space_Grotesk'] font-bold text-sm uppercase tracking-widest border-b-4 border-[#000000]">
+                    <div>DATE</div>
+                    <div>RESULT</div>
+                    <div class="hidden sm:block">FACTION</div>
+                    <div class="text-right">OPPONENT</div>
+                </div>
+                <div class="divide-y-2 divide-[#000000]" id="matches-list"></div>
+            </div>
+        </div>
+
+        <div id="view-game" class="hidden">
+            <section id="game-section" class="py-8 px-4 lg:px-12 w-full max-w-5xl mx-auto flex flex-col items-center text-[#191c1d] min-h-[calc(100vh-4rem)] relative z-10 fade-in">
+                
+                <div id="gameover-overlay" class="fixed inset-0 bg-[#000000]/60 flex items-center justify-center z-[150] backdrop-blur-sm hidden">
+                    <div class="bg-[#FF5722] text-[#000000] border-4 border-[#000000] p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] pointer-events-none anim-stamp">
+                        <h2 id="go-title" class="font-['Space_Grotesk'] font-black text-5xl md:text-7xl uppercase tracking-widest text-center">CHECKMATE</h2>
+                        <p id="go-desc" class="font-black mt-2 text-xl text-center bg-[#000000] text-[#ffffff] p-2 inline-block w-full">WHITE WINS</p>
+                    </div>
+                </div>
+
+                <div class="w-full flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-8 gap-4 bg-[#ffffff] p-4 border-4 border-[#000000] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]" id="game-top-bar">
+                    <div class="flex items-center gap-4">
+                        <button onclick="endSession()" id="abort-btn" class="brutalist-btn px-5 py-3 font-['Space_Grotesk'] font-black text-xs uppercase tracking-widest bg-[#FF5722] text-[#000000] border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">ABORT_MATCH</button>
+                        <button onclick="toggleFlip()" class="brutalist-btn p-2 text-[#ffffff] bg-[#3B82F6] border-2 border-[#000000] flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" title="Flip Board">
+                            <span class="material-symbols-outlined">swap_vert</span>
+                        </button>
+                        <button onclick="toggleFullscreen()" id="fs-btn" class="brutalist-btn p-2 text-[#000000] bg-[#e1e3e4] border-2 border-[#000000] flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" title="Toggle Fullscreen">
+                            <span class="material-symbols-outlined">fullscreen</span>
+                        </button>
+                        <button onclick="toggleAnalysis()" id="analysis-toggle-btn" class="brutalist-btn p-2 border-2 border-[#000000] flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" title="Toggle Engine Analysis">
+                            <span class="material-symbols-outlined">troubleshoot</span>
+                        </button>
+                        <div class="flex flex-col ml-2 border-l-4 border-[#000000] pl-4 hidden md:flex">
+                            <span class="text-[0.65rem] font-['Space_Grotesk'] font-black uppercase tracking-widest text-[#000000] opacity-70">ACTIVE_PROTOCOL</span>
+                            <div class="flex items-center gap-2 text-[#000000]">
+                                <span id="protocol-badge" class="text-lg font-['Space_Grotesk'] font-black uppercase bg-[#00E676] px-1 border-2 border-[#000000]">VS_ENGINE</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="status-bar" class="px-6 py-3 border-4 border-[#000000] font-['Space_Grotesk'] font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-[#000000]">
+                        <span id="status-indicator" class="w-3 h-3 border-2 border-[#000000] rounded-none"></span>
+                        <span id="status-msg">YOUR_TURN</span>
+                    </div>
+                </div>
+
+                <div class="w-full flex justify-center mt-2" id="canvas-container">
+                    <div class="flex flex-row gap-2 md:gap-4 w-full justify-center relative">
+                        <div id="eval-bar-wrapper" class="w-6 md:w-10 bg-[#e1e3e4] border-4 border-[#000000] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex-col justify-end overflow-hidden relative self-stretch hidden">
+                            <div id="eval-fill" class="w-full bg-[#ffffff] transition-all duration-700 ease-in-out border-t-4 border-[#000000]" style="height: 50%;"></div>
+                            <div class="absolute inset-0 flex items-center justify-center pointer-events-none mix-blend-difference">
+                                <span id="eval-text-vert" class="font-mono text-xs md:text-sm font-bold text-[#ffffff] -rotate-90 whitespace-nowrap">0.00</span>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-[#e1e3e4] border-4 border-[#000000] shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] relative flex-shrink-0 max-w-full">
+                            <canvas id="chess-canvas" class="bg-[#ffffff] cursor-pointer border-4 border-[#000000] block max-w-full"></canvas>
+                            <div class="absolute -bottom-6 -right-6 p-2 bg-[#ffffff] text-[#000000] border-4 border-[#000000] font-['Space_Grotesk'] font-black text-[0.6rem] uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] pointer-events-none hidden md:block">MATRIX_ACTIVE</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="analysis-panel" class="w-full max-w-[600px] mt-8 gap-4 fade-in hidden">
+                    <div class="flex flex-col sm:flex-row items-center justify-between bg-[#000000] text-[#00E676] p-4 border-4 border-[#000000] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] gap-4 w-full">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-3xl">psychology</span>
+                            <span class="font-['Space_Grotesk'] font-black uppercase tracking-widest text-lg">ENGINE_EVAL</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span id="move-quality-badge" class="font-['Space_Grotesk'] font-black text-lg tracking-widest uppercase bg-[#ffffff] px-2 border-2 border-[#000000] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hidden"></span>
+                            <span id="eval-text-horiz" class="font-mono font-black text-2xl bg-[#ffffff] text-[#000000] px-4 py-1 border-2 border-[#000000] shadow-[inset_2px_2px_0px_0px_rgba(0,0,0,0.2)]">0.00</span>
+                        </div>
+                    </div>
+                    
+                    <div id="analysis-extra-controls" class="hidden flex-col gap-4 w-full">
+                        <div class="flex flex-col sm:flex-row gap-4 mt-4 w-full">
+                            <input type="text" id="fen-input" placeholder="PASTE_FEN_STRING..." class="flex-1 border-4 border-[#000000] px-4 py-3 font-mono text-sm bg-[#ffffff] focus:outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" />
+                            <button onclick="loadFen()" class="brutalist-btn bg-[#3B82F6] text-[#ffffff] font-['Space_Grotesk'] font-black px-6 py-3 sm:py-0 border-4 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-[#2563EB]">LOAD FEN</button>
+                        </div>
+                        <div class="flex gap-4 mt-2 w-full">
+                            <button onclick="undoMove()" class="brutalist-btn flex-1 bg-[#ffffff] border-4 border-[#000000] p-4 font-['Space_Grotesk'] font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-2 hover:bg-[#e1e3e4]"><span class="material-symbols-outlined">undo</span> UNDO</button>
+                            <button onclick="resetBoard()" class="brutalist-btn flex-1 bg-[#FF5722] text-[#000000] border-4 border-[#000000] p-4 font-['Space_Grotesk'] font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-2 hover:bg-[#E64A19]"><span class="material-symbols-outlined">restart_alt</span> RESET</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="game-id-badge" class="mt-8 font-['Space_Grotesk'] uppercase text-[#ffffff] bg-[#000000] text-[0.65rem] font-black tracking-[0.2em] px-4 py-2 border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    ID: <strong class="text-[#00E676]" id="game-id-text">WHITE_COMMAND</strong>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const PIECE_URLS = {
+            w: { r: 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg', n: 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg', b: 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg', q: 'https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg', k: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg', p: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg' },
+            b: { r: 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg', n: 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg', b: 'https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg', q: 'https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg', k: 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg', p: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg' }
+        };
+
+        const loadedImages = { w: {}, b: {} };
+        let imagesReady = false;
+
+        const ADJECTIVES = ['NEON', 'VOID', 'CYBER', 'QUANTUM', 'STEALTH', 'ROGUE', 'IRON', 'GHOST', 'SHADOW', 'COBALT', 'STATIC'];
+        const NOUNS = ['WOLF', 'VIPER', 'RAVEN', 'MANTIS', 'NEXUS', 'ECHO', 'PULSE', 'STRIKE', 'BLADE', 'RONIN', 'PROXY'];
+        const generateRandomAlias = () => `${ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)]}_${NOUNS[Math.floor(Math.random() * NOUNS.length)]}_${Math.floor(Math.random() * 99)}`;
+
+        const TACTICS_DATABASE = [
+            { fen: 'r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4', desc: 'MATE IN 1' },
+            { fen: 'rnbqkbnr/pppp1ppp/8/4p3/5PP1/8/PPPPP2P/RNBQKBNR b KQkq - 0 2', desc: 'MATE IN 1' },
+            { fen: 'r5rk/5p1p/5R2/4B3/8/8/7P/7K w - - 0 1', desc: 'MATE IN 2' },
+            { fen: '8/6R1/1p6/p1p5/2P5/1P6/P4K1p/7k w - - 0 1', desc: 'MATE IN 1' },
+            { fen: 'r1b1k2r/1pppqppp/p1n5/4P3/2B1n3/5N2/PP3PPP/R1BQR1K1 b kq - 1 10', desc: 'FIND BEST MOVE' },
+            { fen: '6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1', desc: 'MATE IN 1' },
+            { fen: '1k1r4/pp3p1p/3p4/2p1q3/4P3/8/PPP3PP/1K1R1Q2 w - - 0 23', desc: 'FIND BEST MOVE' },
+            { fen: 'r2q1rk1/1pp2ppp/p1p5/4p3/4P1b1/2NP1N2/PPP2P2/R1BQR1K1 w - - 0 13', desc: 'FIND BEST MOVE' },
+            { fen: '6k1/p4p1p/1p3qp1/8/1P6/P4P1P/5P2/4Q1K1 w - - 1 31', desc: 'FIND BEST MOVE' },
+            { fen: '2r2rk1/1pqbbppp/p3pn2/4p3/P2B1P2/2N5/1PP1B1PP/R2Q1R1K w - - 0 15', desc: 'FIND BEST MOVE' }
+        ];
+
+        const state = {
+            profile: null, currentView: 'home', game: new Chess(), gameMode: '', playerColor: 'w',
+            aiLevel: 5, aiColorConfig: 'w', isAiThinking: false, isBoardFlipped: false, isFullscreen: false,
+            gameEndedTracked: false, isAnalysisEnabled: false, evaluation: '0.00', evalNumericScore: 0,
+            moveQuality: null, bestEngineMove: null, fenInput: '', tacticDesc: '', evalScoreRef: 0,
+            cplTotal: 0, cplMoves: 0, perfElo: 0, prevFenRef: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+            initialFenRef: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+            selectedSquare: null, validMoves: [], dragState: null, evalTimer: null
+        };
+
+        const layout = { paddingLeft: 0, paddingTop: 0, squareSize: 0 };
+        const canvas = document.getElementById('chess-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function initAudio() {
+            if (state.profile.soundEnabled === false) return;
+            try {
+                if (!window.audioCtx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    window.audioCtx = new AudioContext();
+                }
+                if (window.audioCtx.state === 'suspended') window.audioCtx.resume();
+            } catch(e) {}
+        }
+
+        function init() {
+            let loadedCount = 0;
+            const checkDone = () => { 
+                loadedCount++; 
+                if (loadedCount === 12) {
+                    imagesReady = true;
+                    setTimeout(() => { document.getElementById('boot-screen').classList.add('hidden'); updateUI(); renderBoard(); }, 800);
+                }
+            };
+            Object.keys(PIECE_URLS).forEach(color => {
+                Object.keys(PIECE_URLS[color]).forEach(type => {
+                    const img = new Image(); img.crossOrigin = "Anonymous"; img.src = PIECE_URLS[color][type];
+                    img.onload = checkDone; img.onerror = () => { loadedImages[color][type] = 'error'; checkDone(); };
+                    loadedImages[color][type] = img;
+                });
+            });
+
+            try {
+                const saved = localStorage.getItem('gm_blueprint_profile');
+                if (saved) {
+                    state.profile = JSON.parse(saved);
+                    if (!state.profile.history) state.profile.history = [];
+                    if (!state.profile.boardColor) state.profile.boardColor = '#3B82F6';
+                    if (!state.profile.pieceStyle) state.profile.pieceStyle = 'none';
+                    if (state.profile.showEngineArrow === undefined) state.profile.showEngineArrow = true;
+                    if (state.profile.soundEnabled === undefined) state.profile.soundEnabled = true;
+                }
+            } catch (e) {}
+            if (!state.profile) state.profile = { alias: generateRandomAlias(), elo: 1200, matches: 0, wins: 0, history: [], boardColor: '#3B82F6', pieceStyle: 'none', showEngineArrow: true, soundEnabled: true };
+            saveProfile();
+
+            const marquee = document.getElementById('marquee-container');
+            let mContent = '';
+            for(let i=0; i<6; i++) {
+                mContent += `<span class="font-['Space_Grotesk'] font-bold text-sm tracking-[0.2em] flex items-center gap-4"><span class="material-symbols-outlined text-xs text-[#ffffff]">fiber_manual_record</span> OFFLINE COMPUTE</span><span class="font-['Space_Grotesk'] font-bold text-sm tracking-[0.2em] flex items-center gap-4"><span class="material-symbols-outlined text-xs text-[#e1e3e4]">fiber_manual_record</span> ZERO LATENCY</span><span class="font-['Space_Grotesk'] font-bold text-sm tracking-[0.2em] flex items-center gap-4"><span class="material-symbols-outlined text-xs text-[#00E676]">fiber_manual_record</span> PURE 2D CANVAS</span><span class="font-['Space_Grotesk'] font-bold text-sm tracking-[0.2em] flex items-center gap-4"><span class="material-symbols-outlined text-xs text-[#ffffff]">fiber_manual_record</span> STOCKFISH V16</span>`;
+            }
+            marquee.innerHTML = mContent;
+
+            window.addEventListener('resize', renderBoard);
+            if (window.matchMedia("(min-width: 768px)").matches) {
+                window.addEventListener('mousemove', (e) => {
+                    requestAnimationFrame(() => {
+                        const bx = document.getElementById('bg-cursor-x'), by = document.getElementById('bg-cursor-y'), bb = document.getElementById('bg-cursor-box');
+                        if(bx) bx.style.transform = `translateX(${e.clientX}px)`; if(by) by.style.transform = `translateY(${e.clientY}px)`; if(bb) bb.style.transform = `translate(${e.clientX}px, ${e.clientY}px) rotate(${e.clientX % 90}deg)`;
+                    });
+                });
+            }
+
+            canvas.addEventListener('pointerdown', handlePointerDown);
+            canvas.addEventListener('pointermove', handlePointerMove);
+            window.addEventListener('pointerup', handlePointerUp);
+            document.getElementById('fen-input').addEventListener('input', (e) => state.fenInput = e.target.value);
+            buildSettings();
+        }
+
+        function saveProfile() { localStorage.setItem('gm_blueprint_profile', JSON.stringify(state.profile)); buildSettings(); updateUI(); if(state.gameMode) renderBoard(); }
+
+        function playSound(type) {
+            if (state.profile.soundEnabled === false) return;
+            try {
+                if (!window.audioCtx) return;
+                const ctx = window.audioCtx;
+                if (ctx.state === 'suspended') ctx.resume();
+                const osc = ctx.createOscillator(), gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                const now = ctx.currentTime;
+                if (type === 'move') { osc.type = 'sine'; osc.frequency.setValueAtTime(300, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.1); gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1);
+                } else if (type === 'capture') { osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(200, now + 0.15); gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15); osc.start(now); osc.stop(now + 0.15);
+                } else if (type === 'castle') { osc.type = 'sine'; osc.frequency.setValueAtTime(300, now); gain.gain.setValueAtTime(0.3, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.05); gain.gain.setValueAtTime(0.3, now + 0.1); gain.gain.linearRampToValueAtTime(0.01, now + 0.15); osc.start(now); osc.stop(now + 0.15);
+                } else if (type === 'check') { osc.type = 'triangle'; osc.frequency.setValueAtTime(600, now); osc.frequency.setValueAtTime(800, now + 0.1); gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.3); osc.start(now); osc.stop(now + 0.3);
+                } else if (type === 'gameover') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(40, now + 0.5); gain.gain.setValueAtTime(0.4, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5); osc.start(now); osc.stop(now + 0.5); }
+            } catch (e) {}
+        }
+
+        function playMoveSound(gameInstance, move) {
+            if (gameInstance.in_checkmate() || gameInstance.game_over()) playSound('gameover');
+            else if (gameInstance.in_check()) playSound('check');
+            else if (move.flags.includes('k') || move.flags.includes('q')) playSound('castle');
+            else if (move.flags.includes('c') || move.flags.includes('e')) playSound('capture');
+            else playSound('move');
+        }
+
+        function cloneGame(gameInstance) {
+            const clone = new Chess();
+            try { clone.load(state.initialFenRef); } catch(e) {}
+            for (let move of gameInstance.history()) clone.move(move);
+            return clone;
+        }
+
+        function triggerEval() {
+            if (state.gameMode !== 'analysis' && state.gameMode !== 'elotest' && !state.isAnalysisEnabled) {
+                state.bestEngineMove = null; renderBoard(); return;
+            }
+            const currentFen = state.game.fen();
+            const isHistoryMove = state.prevFenRef !== currentFen;
+            if (!isHistoryMove) state.evaluation = 'CALCULATING...';
+            updateUI();
+
+            clearTimeout(state.evalTimer);
+            state.evalTimer = setTimeout(async () => {
+                try {
+                    const response = await fetch(`https://stockfish.online/api/s/v2.php?fen=${encodeURIComponent(currentFen)}&depth=13`);
+                    const data = await response.json();
+                    if (data.success && state.game.fen() === currentFen) { 
+                        let evStr = data.evaluation !== undefined ? data.evaluation : data.score;
+                        let numericScore = 0, displayScore = "0.00";
+                        if (data.mate) { displayScore = `M${Math.abs(data.mate)}`; numericScore = data.mate > 0 ? 100 - data.mate : -100 - data.mate; if (data.mate < 0) displayScore = `-${displayScore}`; 
+                        } else { numericScore = parseFloat(evStr); displayScore = numericScore > 0 ? `+${numericScore.toFixed(2)}` : numericScore.toFixed(2); }
+
+                        state.evaluation = displayScore; state.evalNumericScore = numericScore;
+
+                        if (data.bestmove) {
+                            const uci = data.bestmove.split(' ')[1];
+                            if (uci && uci.length >= 4) state.bestEngineMove = { from: uci.substring(0, 2), to: uci.substring(2, 4) };
+                            else state.bestEngineMove = null;
+                        }
+
+                        if (isHistoryMove && state.prevFenRef !== 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1') {
+                            const playerWhoMoved = state.game.turn() === 'w' ? 'b' : 'w';
+                            let delta = playerWhoMoved === 'w' ? (numericScore - state.evalScoreRef) : (state.evalScoreRef - numericScore);
+                            if (state.gameMode === 'elotest' && playerWhoMoved === state.playerColor) {
+                                let cplLoss = Math.max(0, -delta * 100); cplLoss = Math.min(1000, cplLoss); 
+                                state.cplTotal += cplLoss; state.cplMoves += 1;
+                            }
+                            let quality = { text: 'GOOD_MOVE', color: 'text-[#00E676]' };
+                            if (delta <= -3.0) quality = { text: 'BLUNDER', color: 'text-[#ba1a1a]' };
+                            else if (delta <= -1.0) quality = { text: 'MISTAKE', color: 'text-[#FF5722]' };
+                            else if (delta <= -0.5) quality = { text: 'INACCURACY', color: 'text-[#4c616b]' };
+                            else if (delta > 1.5) quality = { text: 'BRILLIANT', color: 'text-[#3B82F6]' };
+                            else if (delta > 0.5) quality = { text: 'EXCELLENT', color: 'text-[#00E676]' };
+                            state.moveQuality = quality;
+                        } else if (!isHistoryMove && currentFen === 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1') { state.moveQuality = null; }
+
+                        state.evalScoreRef = numericScore; state.prevFenRef = currentFen;
+                        if (state.gameMode === 'analysis' || state.isAnalysisEnabled) state.fenInput = currentFen;
+                        updateUI(); renderBoard();
+                    }
+                } catch (e) { state.evaluation = 'OFFLINE'; updateUI(); }
+            }, 400);
+        }
+
+        function checkGameOver() {
+            if (state.game.game_over() && !state.gameEndedTracked && state.gameMode !== 'analysis') {
+                state.gameEndedTracked = true;
+                const isWin = state.game.in_checkmate() && state.game.turn() !== state.playerColor;
+                const isDraw = state.game.in_draw() || state.game.in_stalemate() || state.game.in_threefold_repetition();
+                let opponent = '', resultStr = isWin ? 'WIN' : isDraw ? 'DRAW' : 'LOSS';
+                if (state.gameMode === 'elotest') {
+                    opponent = 'ELO_TEST_SYSTEM';
+                    const acpl = state.cplMoves > 0 ? state.cplTotal / state.cplMoves : 100;
+                    state.perfElo = Math.max(400, Math.min(3200, Math.round(3000 - (acpl * 20))));
+                    state.profile.elo = Math.round((state.profile.elo * 0.7) + (state.perfElo * 0.3));
+                } else {
+                    opponent = state.gameMode === 'ai' ? `CPU_LVL_${state.aiLevel}` : 'PUZZLE_AGENT';
+                    state.profile.elo += isWin ? 25 : isDraw ? 0 : -15;
+                }
+                state.profile.matches += 1; if(isWin) state.profile.wins += 1;
+                state.profile.history.unshift({ date: Date.now(), result: resultStr, color: state.playerColor, against: opponent });
+                if(state.profile.history.length > 15) state.profile.history.pop();
+                saveProfile();
+            }
+        }
+
+        async function makeAIMove() {
+            state.isAiThinking = true; updateUI(); let moveMade = false;
+            try {
+                const response = await fetch(`https://stockfish.online/api/s/v2.php?fen=${encodeURIComponent(state.game.fen())}&depth=${state.aiLevel}`);
+                const data = await response.json();
+                if (data.success && data.bestmove) {
+                    const uciMove = data.bestmove.split(' ')[1];
+                    if (uciMove) {
+                        const newGame = cloneGame(state.game);
+                        const move = newGame.move({ from: uciMove.substring(0, 2), to: uciMove.substring(2, 4), promotion: uciMove.length > 4 ? uciMove[4] : 'q' });
+                        if (move) { playMoveSound(newGame, move); state.game = newGame; moveMade = true; }
+                    }
+                }
+            } catch (err) {}
+            if (!moveMade) {
+                const moves = state.game.moves({ verbose: true });
+                if (moves.length > 0) {
+                    const newGame = cloneGame(state.game);
+                    const randomMove = moves[Math.floor(Math.random() * moves.length)];
+                    const move = newGame.move(randomMove);
+                    if (move) { playMoveSound(newGame, move); state.game = newGame; }
+                }
+            }
+            state.isAiThinking = false; 
+            
+            renderBoard(); 
+
+            setTimeout(() => {
+                checkGameOver();
+                triggerEval();
+                updateUI();
+            }, 10);
+        }
+
+        function executeMove(source, target) {
+            const newGame = cloneGame(state.game);
+            const move = newGame.move({ from: source, to: target, promotion: 'q' });
+            if (move) {
+                playMoveSound(newGame, move); 
+                state.game = newGame; 
+                state.selectedSquare = null; 
+                state.validMoves = [];
+                
+                renderBoard();
+                updateUI();
+                
+                setTimeout(() => {
+                    triggerEval(); 
+                    checkGameOver();
+                    
+                    if ((state.gameMode === 'ai' || state.gameMode === 'elotest') && !state.game.game_over()) {
+                        setTimeout(() => {
+                            if (state.gameMode) makeAIMove();
+                        }, 800);
+                    }
+                }, 10);
+                
+                return true;
+            }
+            return false;
+        }
+
+        // --- View Controllers ---
+        function navClick(view) {
+            initAudio();
+            if (state.gameMode) endSession();
+            
+            if (view === 'PLAY') { state.currentView = 'home'; state.errorMsg = ''; } 
+            else if (view === 'MATCHES') { state.currentView = 'matches'; state.errorMsg = ''; } 
+            else if (view === 'ANALYSIS') {
+                state.gameMode = 'analysis'; state.playerColor = 'w'; state.game = new Chess(); state.isAnalysisEnabled = true; state.currentView = 'home';
+                state.moveQuality = null; state.bestEngineMove = null; state.evalScoreRef = 0; 
+                state.initialFenRef = state.game.fen(); state.prevFenRef = state.game.fen(); state.fenInput = state.game.fen();
+                triggerEval();
+            } else if (view === 'TACTICS') {
+                const rt = TACTICS_DATABASE[Math.floor(Math.random() * TACTICS_DATABASE.length)];
+                state.gameMode = 'tactics'; state.playerColor = rt.fen.split(' ')[1]; state.game = new Chess(); state.game.load(rt.fen);
+                state.isAnalysisEnabled = true; state.currentView = 'home'; state.moveQuality = null; state.tacticDesc = rt.desc;
+                state.initialFenRef = rt.fen; state.prevFenRef = rt.fen; state.fenInput = rt.fen;
+                triggerEval();
+            } else if (view === 'ELOTEST') {
+                state.gameMode = 'elotest'; state.playerColor = 'w'; state.aiLevel = 10; state.game = new Chess(); state.isAnalysisEnabled = false; state.currentView = 'home';
+                state.moveQuality = null; state.bestEngineMove = null; state.evalScoreRef = 0; state.cplTotal = 0; state.cplMoves = 0; state.perfElo = 0;
+                state.initialFenRef = state.game.fen(); state.prevFenRef = state.game.fen(); state.fenInput = state.game.fen();
+                triggerEval();
+                if (state.playerColor === 'b') {
+                    setTimeout(() => { if (state.gameMode) makeAIMove(); }, 800);
+                }
+            }
+            updateUI();
+            if (state.gameMode) renderBoard();
+        }
+
+        function initializeCombat() {
+            initAudio();
+            const fc = state.aiColorConfig === 'random' ? (Math.random() > 0.5 ? 'w' : 'b') : state.aiColorConfig;
+            state.playerColor = fc; state.isBoardFlipped = (fc === 'b'); state.game = new Chess();
+            state.selectedSquare = null; state.validMoves = []; state.errorMsg = ''; state.gameEndedTracked = false; state.isAnalysisEnabled = false; state.gameMode = 'ai';
+            state.fenInput = state.game.fen(); state.evalScoreRef = 0; state.initialFenRef = state.game.fen(); state.prevFenRef = state.game.fen(); state.moveQuality = null;
+            toggleAiSetup(false); updateUI(); renderBoard();
+            if (fc === 'b') {
+                setTimeout(() => { if (state.gameMode) makeAIMove(); }, 800);
+            }
+        }
+
+        function endSession() {
+            state.gameMode = ''; state.game = new Chess(); state.playerColor = 'w';
+            state.selectedSquare = null; state.validMoves = []; state.dragState = null; state.isAiThinking = false; state.isFullscreen = false;
+            state.isAnalysisEnabled = false; state.moveQuality = null;
+            state.initialFenRef = state.game.fen(); state.prevFenRef = state.game.fen();
+            state.currentView = 'home'; updateUI();
+        }
+
+        function toggleFlip() { state.isBoardFlipped = !state.isBoardFlipped; updateUI(); renderBoard(); }
+        function toggleFullscreen() { state.isFullscreen = !state.isFullscreen; updateUI(); renderBoard(); }
+        function toggleAnalysis() { state.isAnalysisEnabled = !state.isAnalysisEnabled; triggerEval(); updateUI(); }
+
+        function undoMove() {
+            if(state.isAiThinking) return;
+            const newGame = cloneGame(state.game);
+            if (newGame.history().length > 0) {
+                newGame.undo();
+                if ((state.gameMode === 'ai' || state.gameMode === 'elotest') && state.playerColor !== newGame.turn() && newGame.history().length > 0) newGame.undo();
+                playSound('move'); state.game = newGame; state.selectedSquare = null; state.validMoves = []; state.moveQuality = null;
+                state.prevFenRef = newGame.fen(); state.fenInput = newGame.fen(); triggerEval(); updateUI();
+            }
+        }
+
+        function resetBoard() {
+            if(state.isAiThinking) return;
+            const newGame = new Chess();
+            if (state.gameMode === 'tactics') newGame.load(state.initialFenRef);
+            playSound('castle'); state.game = newGame; state.selectedSquare = null; state.validMoves = []; state.errorMsg = '';
+            state.moveQuality = null; state.bestEngineMove = null; state.evalScoreRef = 0;
+            if (state.gameMode !== 'tactics') state.initialFenRef = newGame.fen();
+            state.prevFenRef = newGame.fen(); state.fenInput = newGame.fen(); triggerEval(); updateUI();
+        }
+
+        function loadFen() {
+            if(state.isAiThinking) return;
+            const val = document.getElementById('fen-input').value;
+            const newGame = new Chess();
+            try {
+                const success = newGame.load(val);
+                if (success || newGame.fen() === val) {
+                    playSound('castle'); state.game = newGame; state.selectedSquare = null; state.validMoves = []; state.errorMsg = ''; state.moveQuality = null;
+                    state.initialFenRef = newGame.fen(); state.prevFenRef = newGame.fen(); triggerEval();
+                } else state.errorMsg = 'INVALID_FEN_STRING';
+            } catch (e) { state.errorMsg = 'INVALID_FEN_STRING'; }
+            updateUI();
+        }
+
+        // --- Interaction Handlers ---
+        function getPointerPos(e) { const rect = canvas.getBoundingClientRect(); return { x: e.clientX - rect.left, y: e.clientY - rect.top }; }
+        function getSquareIdFromPos(x, y) {
+            const drawCol = Math.floor((x - layout.paddingLeft) / layout.squareSize);
+            const drawRow = Math.floor((y - layout.paddingTop) / layout.squareSize);
+            if (drawCol >= 0 && drawCol < 8 && drawRow >= 0 && drawRow < 8) {
+                const isBlack = state.playerColor === 'b' ? !state.isBoardFlipped : state.isBoardFlipped;
+                const c = isBlack ? 7 - drawCol : drawCol; const r = isBlack ? 7 - drawRow : drawRow;
+                return String.fromCharCode(97 + c) + (8 - r);
+            }
+            return null;
+        }
+
+        function handlePointerDown(e) {
+            initAudio();
+            try { if (e.pointerId && e.target.setPointerCapture) e.target.setPointerCapture(e.pointerId); } catch(ex){}
+            const isAnalysis = state.gameMode === 'analysis' || state.gameMode === 'tactics';
+            if (state.isAiThinking || (!isAnalysis && state.game.turn() !== state.playerColor) || state.game.game_over()) return;
+            
+            const pos = getPointerPos(e);
+            const sq = getSquareIdFromPos(pos.x, pos.y);
+            if (sq) {
+                const targetMove = state.validMoves.find(m => m.to === sq);
+                if (targetMove && state.selectedSquare) { executeMove(state.selectedSquare, sq); return; }
+                const piece = state.game.get(sq);
+                if (piece && (isAnalysis || piece.color === state.playerColor)) {
+                    state.selectedSquare = sq; state.validMoves = state.game.moves({ square: sq, verbose: true });
+                    state.dragState = { isDragging: true, source: sq, piece: piece, x: pos.x, y: pos.y }; renderBoard();
+                } else { state.selectedSquare = null; state.validMoves = []; renderBoard(); }
+            } else { state.selectedSquare = null; state.validMoves = []; renderBoard(); }
+        }
+        function handlePointerMove(e) {
+            if (!state.dragState?.isDragging) return;
+            const pos = getPointerPos(e); state.dragState.x = pos.x; state.dragState.y = pos.y; renderBoard();
+        }
+        function handlePointerUp(e) {
+            try { if (e.pointerId && e.target.hasPointerCapture && e.target.hasPointerCapture(e.pointerId)) e.target.releasePointerCapture(e.pointerId); } catch(ex){}
+            if (!state.dragState?.isDragging) return;
+            const pos = getPointerPos(e);
+            const sq = getSquareIdFromPos(pos.x, pos.y);
+            const source = state.dragState.source;
+            state.dragState = null; 
+            
+            let moveExecuted = false;
+            if (sq && sq !== source) {
+                const targetMove = state.validMoves.find(m => m.to === sq);
+                if (targetMove) {
+                    moveExecuted = executeMove(source, sq);
+                }
+            }
+            
+            if (!moveExecuted) renderBoard(); 
+        }
+
+        // --- Renderers ---
+        function renderBoard() {
+            if (!imagesReady || !state.gameMode) return;
+            
+            const containerWidth = canvas.parentElement.parentElement.clientWidth || window.innerWidth;
+            const maxDim = state.isFullscreen ? 900 : 600;
+            const minDimension = Math.min(containerWidth - 32, window.innerHeight * (state.isFullscreen ? 0.85 : 0.7), maxDim); 
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = minDimension * dpr; canvas.height = minDimension * dpr;
+            canvas.style.width = `${minDimension}px`; canvas.style.height = `${minDimension}px`;
+            
+            ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.scale(dpr, dpr);
+
+            const size = minDimension;
+            const paddingLeft = size * 0.04; const paddingTop = size * 0.02; const paddingBottom = size * 0.04; const paddingRight = size * 0.02;
+            let boardSize = size - paddingLeft - paddingRight;
+            if (boardSize + paddingTop + paddingBottom > size) boardSize = size - paddingTop - paddingBottom;
+            const squareSize = boardSize / 8;
+            layout.paddingLeft = paddingLeft; layout.paddingTop = paddingTop; layout.squareSize = squareSize;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const isBlack = state.playerColor === 'b' ? !state.isBoardFlipped : state.isBoardFlipped;
+            const history = state.game.history({ verbose: true });
+            const lastMove = history.length > 0 ? history[history.length - 1] : null;
+            const isKingInCheck = state.game.in_check();
+
+            const isDarkBoard = state.profile.boardColor === '#000000';
+            const lightSquare = isDarkBoard ? '#4c616b' : '#ffffff';
+            const darkSquare = state.profile.boardColor || '#3B82F6';
+
+            // Draw Squares
+            for (let drawRow = 0; drawRow < 8; drawRow++) {
+                for (let drawCol = 0; drawCol < 8; drawCol++) {
+                    const c = isBlack ? 7 - drawCol : drawCol;
+                    const r = isBlack ? 7 - drawRow : drawRow;
+                    const sqId = String.fromCharCode(97 + c) + (8 - r);
+                    const x = Math.round(paddingLeft + (drawCol * squareSize));
+                    const y = Math.round(paddingTop + (drawRow * squareSize));
+                    const sSize = Math.round(squareSize);
+
+                    ctx.fillStyle = ((drawRow + drawCol) % 2 === 0) ? lightSquare : darkSquare;
+                    ctx.fillRect(x, y, sSize, sSize);
+
+                    if (lastMove && (lastMove.from === sqId || lastMove.to === sqId)) {
+                        ctx.fillStyle = isDarkBoard ? 'rgba(255, 255, 255, 0.15)' : 'rgba(59, 130, 246, 0.3)';
+                        ctx.fillRect(x, y, sSize, sSize);
+                    }
+
+                    ctx.strokeStyle = '#000000'; ctx.lineWidth = 2; ctx.strokeRect(x, y, sSize, sSize);
+
+                    if (state.selectedSquare === sqId) {
+                        ctx.fillStyle = isDarkBoard ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 230, 118, 0.4)';
+                        ctx.fillRect(x, y, sSize, sSize);
+                    } else if (state.validMoves.some(m => m.to === sqId)) {
+                        ctx.fillStyle = '#000000'; ctx.fillRect(x + sSize/2 - sSize*0.15, y + sSize/2 - sSize*0.15, sSize*0.3, sSize*0.3);
+                    }
+                }
+            }
+
+            // Draw Coordinates
+            ctx.fillStyle = '#000000'; ctx.font = `bold 12pt 'Space Grotesk', sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+            for (let i = 0; i < 8; i++) {
+                ctx.fillText(isBlack ? (i + 1) : (8 - i), paddingLeft / 2, paddingTop + (i * squareSize) + (squareSize / 2));
+                ctx.fillText(files[isBlack ? 7 - i : i].toUpperCase(), paddingLeft + (i * squareSize) + (squareSize / 2), paddingTop + boardSize + (paddingBottom / 1.5));
+            }
+
+            const getCoord = (sq) => {
+                let c = sq.charCodeAt(0) - 97; let r = 8 - parseInt(sq[1]);
+                if (isBlack) { c = 7 - c; r = 7 - r; } return { c, r };
+            };
+
+            // Draw Pieces
+            files.forEach(f => {
+                for(let rank=1; rank<=8; rank++){
+                    const sq = f+rank;
+                    const piece = state.game.get(sq);
+                    if(piece) {
+                        const {c, r} = getCoord(sq);
+                        const x = paddingLeft + (c * squareSize);
+                        const y = paddingTop + (r * squareSize);
+                        const pSize = squareSize * 0.85; 
+                        const px = x + (squareSize - pSize) / 2;
+                        const py = y + (squareSize - pSize) / 2;
+                        
+                        if (piece.type === 'k' && piece.color === state.game.turn() && isKingInCheck) {
+                            ctx.fillStyle = '#FF5722'; ctx.fillRect(x, y, squareSize, squareSize);
+                        }
+                        
+                        const isDragged = state.dragState && state.dragState.source === sq;
+                        if (isDragged) ctx.globalAlpha = 0.3; 
+                        
+                        const img = loadedImages[piece.color][piece.type];
+                        if (img && img !== 'error') {
+                            ctx.filter = state.profile.pieceStyle || 'none';
+                            ctx.drawImage(img, px, py, pSize, pSize);
+                            ctx.filter = 'none';
+                        } else {
+                            ctx.fillStyle = piece.color === 'w' ? '#ffffff' : '#000000';
+                            ctx.strokeStyle = piece.color === 'w' ? '#000000' : '#ffffff';
+                            ctx.lineWidth = 1; ctx.font = `bold ${pSize * 0.8}px 'Inter', sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                            const symbol = piece.color === 'w' ? piece.type.toUpperCase() : piece.type.toLowerCase();
+                            ctx.fillText(symbol, px + pSize / 2, py + pSize / 2); ctx.strokeText(symbol, px + pSize / 2, py + pSize / 2);
+                        }
+                        if (isDragged) ctx.globalAlpha = 1.0;
+                    }
+                }
+            });
+
+            // Draw Best Move Arrow
+            if ((state.gameMode === 'analysis' || state.isAnalysisEnabled) && state.bestEngineMove && !state.dragState?.isDragging && state.profile.showEngineArrow !== false) {
+                const fromC = getCoord(state.bestEngineMove.from); const toC = getCoord(state.bestEngineMove.to);
+                const startX = paddingLeft + (fromC.c * squareSize) + squareSize / 2; const startY = paddingTop + (fromC.r * squareSize) + squareSize / 2;
+                const endX = paddingLeft + (toC.c * squareSize) + squareSize / 2; const endY = paddingTop + (toC.r * squareSize) + squareSize / 2;
+
+                ctx.save(); ctx.globalAlpha = 0.7; ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(endX, endY);
+                ctx.strokeStyle = '#00E676'; ctx.lineWidth = squareSize * 0.15; ctx.lineCap = 'square'; ctx.stroke();
+                ctx.beginPath(); ctx.arc(endX, endY, squareSize * 0.25, 0, Math.PI * 2); ctx.fillStyle = '#00E676'; ctx.fill(); ctx.restore();
+            }
+
+            // Draw Dragged Piece
+            if (state.dragState && state.dragState.isDragging) {
+                const pSize = squareSize * 1.2; 
+                const img = loadedImages[state.dragState.piece.color][state.dragState.piece.type];
+                if (img && img !== 'error') {
+                    ctx.filter = state.profile.pieceStyle || 'none';
+                    ctx.drawImage(img, state.dragState.x - pSize/2, state.dragState.y - pSize/2, pSize, pSize);
+                    ctx.filter = 'none';
+                } else {
+                    ctx.fillStyle = state.dragState.piece.color === 'w' ? '#ffffff' : '#000000'; ctx.strokeStyle = state.dragState.piece.color === 'w' ? '#000000' : '#ffffff';
+                    ctx.lineWidth = 1; ctx.font = `bold ${pSize * 0.8}px 'Inter', sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    const symbol = state.dragState.piece.color === 'w' ? state.dragState.piece.type.toUpperCase() : state.dragState.piece.type.toLowerCase();
+                    ctx.fillText(symbol, state.dragState.x, state.dragState.y); ctx.strokeText(symbol, state.dragState.x, state.dragState.y);
+                }
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('view-home').classList.toggle('hidden', !!state.gameMode || state.currentView !== 'home');
+            document.getElementById('view-matches').classList.toggle('hidden', !!state.gameMode || state.currentView !== 'matches');
+            document.getElementById('view-game').classList.toggle('hidden', !state.gameMode);
+            
+            const views = ['PLAY', 'MATCHES', 'ANALYSIS', 'TACTICS', 'ELOTEST'];
+            views.forEach(v => {
+                const isAct = (v==='PLAY' && state.currentView==='home' && !state.gameMode) ||
+                              (v==='MATCHES' && state.currentView==='matches') ||
+                              (v==='ANALYSIS' && state.gameMode==='analysis') ||
+                              (v==='ELOTEST' && state.gameMode==='elotest') ||
+                              (v==='TACTICS' && state.gameMode==='tactics');
+                ['desktop', 'sidebar', 'mobile'].forEach(m => {
+                    const el = document.getElementById(`nav-${v.toLowerCase()}-${m}`);
+                    if(!el) return;
+                    if(m==='desktop'){ el.className = `font-['Space_Grotesk'] font-black uppercase tracking-widest text-[0.6875rem] h-full flex items-center px-4 cursor-pointer transition-none ${isAct ? 'bg-[#e1e3e4] text-[#000000] border-x-4 border-[#000000]' : 'text-[#000000] hover:bg-[#f8f9fa]'}`;
+                    } else if(m==='sidebar'){ el.className = `flex items-center gap-4 px-4 py-4 font-['Space_Grotesk'] uppercase text-[0.75rem] tracking-tight font-black transition-none cursor-pointer border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] ${isAct ? 'bg-[#000000] text-[#ffffff]' : 'bg-[#e1e3e4] text-[#000000]'}`;
+                    } else { el.className = `flex flex-col items-center justify-center font-black cursor-pointer h-full px-2 border-r-2 border-[#000000] flex-1 ${isAct ? 'bg-[#e1e3e4]' : 'hover:bg-[#f8f9fa]'}`; }
+                });
+            });
+
+            document.getElementById('sidebar-alias').innerText = state.profile.alias;
+            document.getElementById('sidebar-elo').innerText = state.profile.elo;
+            
+            const herr = document.getElementById('home-error');
+            if(state.errorMsg && !state.gameMode) { herr.innerText = `ERROR: ${state.errorMsg}`; herr.classList.remove('hidden'); }
+            else { herr.classList.add('hidden'); }
+
+            if(state.currentView === 'matches' && !state.gameMode) renderMatchesHTML();
+
+            if (state.gameMode) {
+                const sectionClasses = state.isFullscreen 
+                    ? "fixed inset-0 z-[100] bg-[#f8f9fa] flex flex-col items-center p-4 md:p-8 overflow-y-auto bg-blueprint-grid scanlines text-[#191c1d]"
+                    : "py-8 px-4 lg:px-12 w-full max-w-5xl mx-auto flex flex-col items-center text-[#191c1d] min-h-[calc(100vh-4rem)] relative z-10 fade-in";
+                document.getElementById('game-section').className = sectionClasses;
+                document.getElementById('game-top-bar').className = `w-full flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-8 gap-4 bg-[#ffffff] p-4 border-4 border-[#000000] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${state.isFullscreen ? 'max-w-5xl mx-auto' : ''}`;
+                document.getElementById('canvas-container').className = `w-full flex justify-center mt-2 ${state.isFullscreen ? 'max-w-5xl mx-auto' : ''}`;
+                
+                document.getElementById('protocol-badge').innerText = state.gameMode === 'ai' ? 'VS_ENGINE' : state.gameMode === 'tactics' ? 'TACTICS' : state.gameMode === 'elotest' ? 'ELO_TEST' : 'ANALYSIS';
+                document.getElementById('protocol-badge').className = `text-lg font-['Space_Grotesk'] font-black uppercase px-1 border-2 border-[#000000] ${state.gameMode === 'ai' || state.gameMode === 'elotest' ? 'bg-[#00E676]' : 'bg-[#ffffff]'}`;
+                
+                document.getElementById('game-id-text').innerText = state.gameMode==='analysis'||state.gameMode==='tactics' ? 'SYSTEM_OVERRIDE' : (state.playerColor==='w' ? 'WHITE_COMMAND' : 'BLACK_COMMAND');
+
+                const isOurTurn = state.gameMode === 'analysis' || state.gameMode === 'tactics' || state.game.turn() === state.playerColor;
+                const isGO = state.game.game_over();
+                let gmsg = "", bgC = "bg-[#ffffff]", tC = "text-[#000000]";
+                if(state.gameMode==='analysis') { gmsg="FREE_ANALYSIS_MODE"; bgC="bg-[#e1e3e4]"; }
+                else if(state.gameMode==='tactics') { gmsg=`TACTICS_DRILL: ${state.tacticDesc}`; bgC="bg-[#e1e3e4]"; }
+                else if(state.game.in_checkmate()) { gmsg=`CHECKMATE // ${state.game.turn()==='w'?'BLACK':'WHITE'} WINS`; bgC="bg-[#FF5722]"; }
+                else if(state.game.in_draw()) { gmsg="DRAW_DETECTED"; bgC="bg-[#FF5722]"; }
+                else if(state.game.in_check()) { gmsg="CHECK_WARNING"; bgC="bg-[#FF5722]"; }
+                else if(state.isAiThinking) { 
+                    gmsg="<span class='material-symbols-outlined text-[0.8rem] animate-spin inline-block align-middle mr-1'>memory</span> COMPUTING..."; 
+                    bgC="bg-[#3B82F6]"; 
+                    tC="text-[#ffffff]"; 
+                }
+                else if(isOurTurn) { gmsg="YOUR_TURN"; bgC="bg-[#00E676]"; }
+                else { gmsg="OPPONENTS_TURN"; bgC="bg-[#ffffff]"; }
+
+                const bar = document.getElementById('status-bar');
+                bar.className = `px-6 py-3 border-4 border-[#000000] font-['Space_Grotesk'] font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 ${bgC} shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${tC}`;
+                document.getElementById('status-msg').innerHTML = gmsg;
+                document.getElementById('status-indicator').className = `w-3 h-3 border-2 border-[#000000] rounded-none ${isOurTurn && !state.isAiThinking && !isGO ? 'bg-[#ffffff] animate-pulse' : 'bg-[#000000]'}`;
+                
+                document.getElementById('abort-btn').innerText = isGO ? 'RETURN' : 'ABORT_MATCH';
+                document.getElementById('fs-btn').innerHTML = `<span class="material-symbols-outlined">${state.isFullscreen?'fullscreen_exit':'fullscreen'}</span>`;
+                
+                const aBtn = document.getElementById('analysis-toggle-btn');
+                aBtn.className = `brutalist-btn p-2 border-2 border-[#000000] items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${state.isAnalysisEnabled ? 'bg-[#00E676] text-[#000000]' : 'bg-[#ffffff] text-[#000000]'} ${state.gameMode === 'elotest' ? 'hidden' : 'flex'}`;
+
+                const overObj = document.getElementById('gameover-overlay');
+                if(isGO) {
+                    overObj.classList.remove('hidden');
+                    if (state.gameMode === 'elotest') {
+                        document.getElementById('go-title').innerText = 'TEST COMPLETE';
+                        document.getElementById('go-desc').innerText = `PERFORMANCE ELO: ${state.perfElo}`;
+                    } else {
+                        document.getElementById('go-title').innerText = state.game.in_checkmate() ? 'CHECKMATE' : 'DRAW';
+                        document.getElementById('go-desc').innerText = state.game.in_checkmate() ? `${state.game.turn()==='w'?'BLACK':'WHITE'} WINS` : 'MATCH TERMINATED';
+                    }
+                } else overObj.classList.add('hidden');
+
+                const aPan = document.getElementById('analysis-panel');
+                const ebW = document.getElementById('eval-bar-wrapper');
+                if (state.gameMode === 'analysis' || state.isAnalysisEnabled) {
+                    aPan.classList.remove('hidden'); aPan.classList.add('flex', 'flex-col');
+                    ebW.classList.remove('hidden'); ebW.classList.add('flex');
+                    document.getElementById('eval-text-horiz').innerText = state.evaluation;
+                    document.getElementById('eval-text-vert').innerText = state.evaluation;
+                    
+                    const fenInputEl = document.getElementById('fen-input');
+                    if (fenInputEl && document.activeElement !== fenInputEl) fenInputEl.value = state.fenInput;
+                    
+                    const fPerc = state.isBoardFlipped ? Math.max(0, Math.min(100, 50 - (state.evalNumericScore/8)*50)) : Math.max(0, Math.min(100, 50 + (state.evalNumericScore/8)*50));
+                    document.getElementById('eval-fill').style.height = `${fPerc}%`;
+
+                    const qb = document.getElementById('move-quality-badge');
+                    if(state.moveQuality) {
+                        qb.innerText = state.moveQuality.text;
+                        qb.className = `font-['Space_Grotesk'] font-black text-lg tracking-widest uppercase bg-[#ffffff] px-2 border-2 border-[#000000] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] inline-block ${state.moveQuality.color}`;
+                        qb.classList.remove('hidden');
+                    } else qb.classList.add('hidden');
+
+                    const exCon = document.getElementById('analysis-extra-controls');
+                    if(state.gameMode==='analysis') { exCon.classList.remove('hidden'); exCon.classList.add('flex'); } 
+                    else { exCon.classList.add('hidden'); exCon.classList.remove('flex'); }
+
+                } else {
+                    aPan.classList.add('hidden'); aPan.classList.remove('flex', 'flex-col');
+                    ebW.classList.add('hidden'); ebW.classList.remove('flex');
+                }
+            }
+        }
+
+        function renderMatchesHTML() {
+            const ml = document.getElementById('matches-list');
+            if(state.profile.history.length === 0) {
+                ml.innerHTML = `<div class="p-8 text-center font-mono text-[#4c616b] font-bold">NO_RECORDS_FOUND</div>`;
+            } else {
+                let htm = '';
+                state.profile.history.forEach(h => {
+                    const cCol = h.result==='WIN'?'text-[#00E676]':h.result==='LOSS'?'text-[#FF5722]':'text-[#4c616b]';
+                    htm += `<div class="grid grid-cols-4 gap-4 p-4 items-center font-mono text-sm hover:bg-[#e1e3e4] transition-colors group">
+                        <div class="font-bold text-[#000000] truncate">${new Date(h.date).toLocaleDateString()}</div>
+                        <div class="font-black ${cCol}">${h.result}</div>
+                        <div class="hidden sm:block text-[#4c616b] font-bold">${h.color==='w'?'WHITE':'BLACK'}</div>
+                        <div class="text-right font-black text-[#3B82F6] truncate">${h.against}</div>
+                    </div>`;
+                });
+                ml.innerHTML = htm;
+            }
+        }
+
+        // --- Modals ---
+        function toggleSettings(show) {
+            initAudio();
+            document.getElementById('modal-settings').classList.toggle('hidden', !show);
+            if(show) buildSettings();
+        }
+        function toggleAiSetup(show) {
+            initAudio();
+            document.getElementById('modal-ai').classList.toggle('hidden', !show);
+            if(show) {
+                document.getElementById('ai-level-disp').innerText = `LVL ${state.aiLevel}`;
+                document.getElementById('ai-level-input').value = state.aiLevel;
+                buildAiColorBtns();
+            }
+        }
+        function updateAiLevel(val) {
+            state.aiLevel = parseInt(val);
+            document.getElementById('ai-level-disp').innerText = `LVL ${state.aiLevel}`;
+        }
+        function buildAiColorBtns() {
+            const c = document.getElementById('ai-color-btns');
+            c.innerHTML = `
+                <button onclick="state.aiColorConfig='w'; buildAiColorBtns()" class="flex-1 py-3 font-bold text-sm ${state.aiColorConfig === 'w' ? 'bg-[#000000] text-[#ffffff]' : 'text-[#000000] hover:bg-[#edeeef]'}">WHITE</button>
+                <button onclick="state.aiColorConfig='b'; buildAiColorBtns()" class="flex-1 py-3 font-bold text-sm border-x-2 border-[#000000] ${state.aiColorConfig === 'b' ? 'bg-[#000000] text-[#ffffff]' : 'text-[#000000] hover:bg-[#edeeef]'}">BLACK</button>
+                <button onclick="state.aiColorConfig='random'; buildAiColorBtns()" class="flex-1 py-3 font-bold text-sm ${state.aiColorConfig === 'random' ? 'bg-[#000000] text-[#ffffff]' : 'text-[#000000] hover:bg-[#edeeef]'}">RANDOM</button>
+            `;
+        }
+        function scrambleAlias() {
+            state.profile.alias = generateRandomAlias();
+            saveProfile();
+        }
+        function buildSettings() {
+            document.getElementById('settings-alias').innerText = state.profile.alias;
+            document.getElementById('settings-elo').innerText = state.profile.elo;
+            document.getElementById('settings-winrate').innerText = state.profile.matches > 0 ? Math.round((state.profile.wins/state.profile.matches)*100)+'%' : '0%';
+            
+            let cb = '';
+            ['#e1e3e4', '#3B82F6', '#FF5722', '#00E676', '#000000'].forEach(col => {
+                cb += `<button onclick="state.profile.boardColor='${col}'; saveProfile()" class="w-10 h-10 border-4 transition-transform hover:-translate-y-1 ${state.profile.boardColor===col?'border-[#000000] scale-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]':'border-transparent'}" style="background-color:${col}"></button>`;
+            });
+            document.getElementById('color-palette-btns').innerHTML = cb;
+
+            const psb = [
+                {k:'none', n:'STANDARD'}, {k:'invert(1)', n:'INVERTED'}, 
+                {k:'sepia(1) hue-rotate(180deg) saturate(4)', n:'CYBER'}, {k:'sepia(1) hue-rotate(90deg) saturate(4)', n:'NEON'}
+            ];
+            let pb = '';
+            psb.forEach(p => {
+                pb += `<button onclick="state.profile.pieceStyle='${p.k}'; saveProfile()" class="brutalist-btn px-4 py-2 text-xs font-bold border-2 ${state.profile.pieceStyle===p.k?'border-[#000000] bg-[#000000] text-white':'border-[#000000] bg-white text-black'}">${p.n}</button>`;
+            });
+            document.getElementById('piece-style-btns').innerHTML = pb;
+
+            const aub = `
+                <button onclick="state.profile.soundEnabled=true; saveProfile()" class="brutalist-btn px-4 py-2 text-xs font-bold border-2 ${state.profile.soundEnabled!==false?'border-[#000000] bg-[#000000] text-white':'border-[#000000] bg-white text-black'}">ENABLED</button>
+                <button onclick="state.profile.soundEnabled=false; saveProfile()" class="brutalist-btn px-4 py-2 text-xs font-bold border-2 ${state.profile.soundEnabled===false?'border-[#000000] bg-[#000000] text-white':'border-[#000000] bg-white text-black'}">DISABLED</button>
+            `;
+            document.getElementById('audio-btns').innerHTML = aub;
+
+            const arb = `
+                <button onclick="state.profile.showEngineArrow=true; saveProfile()" class="brutalist-btn px-4 py-2 text-xs font-bold border-2 ${state.profile.showEngineArrow!==false?'border-[#000000] bg-[#000000] text-white':'border-[#000000] bg-white text-black'}">ENABLED</button>
+                <button onclick="state.profile.showEngineArrow=false; saveProfile()" class="brutalist-btn px-4 py-2 text-xs font-bold border-2 ${state.profile.showEngineArrow===false?'border-[#000000] bg-[#000000] text-white':'border-[#000000] bg-white text-black'}">DISABLED</button>
+            `;
+            document.getElementById('arrow-btns').innerHTML = arb;
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
