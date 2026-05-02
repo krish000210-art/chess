@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0">
     <title>NeurO Chess </title>
     <!-- Favicon -->
     <link rel="icon" href="https://img.icons8.com/nolan/1200/chess-com.jpg" type="image/jpeg">
@@ -89,10 +89,53 @@
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; background: #00E676; border: 4px solid #000000; cursor: pointer; border-radius: 0; }
         input[type="range"] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 12px; cursor: pointer; background: #000000; border: 2px solid #000000; }
+
+        #eye-protection-overlay {
+            pointer-events: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(255, 165, 0, 0); /* Invisible by default */
+            mix-blend-mode: multiply;
+            z-index: 9999;
+            transition: background-color 3s ease-in-out; /* Smooth transition */
+        }
+        #eye-protection-overlay.active {
+            background-color: rgba(255, 180, 100, 0.15); /* Warm filter */
+        }
+
+        #eye-protection-toast {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #000000;
+            color: #FFEB3B;
+            padding: 12px 24px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 900;
+            font-size: 12px;
+            letter-spacing: 2px;
+            border: 2px solid #FFEB3B;
+            box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+            z-index: 10000;
+            transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+        #eye-protection-toast.show {
+            bottom: 80px;
+        }
+
     </style>
     <link rel="manifest" href="manifest.json">
 </head>
 <body class="bg-blueprint-grid text-[#191c1d] scanlines crt-flicker">
+
+    <div id="eye-protection-overlay"></div>
+    <div id="eye-protection-toast">EYE PROTECTION ENGAGED</div>
+
 
     <div id="boot-screen" class="fixed inset-0 min-h-screen bg-blueprint-grid flex items-center justify-center font-['Space_Grotesk'] text-[#191c1d] z-[200]">
         <div class="flex flex-col items-center bg-[#ffffff] p-12 border-4 border-[#000000] shadow-[16px_16px_0px_0px_rgba(0,0,0,1)]">
@@ -1021,7 +1064,45 @@
             }
         }
 
+
+        // Eye Protection Logic
+        let eyeProtectionTimer = null;
+        let isEyeProtectionActive = false;
+
+        function resetEyeProtectionTimer() {
+            clearTimeout(eyeProtectionTimer);
+            const overlay = document.getElementById('eye-protection-overlay');
+            const toast = document.getElementById('eye-protection-toast');
+
+            // If they are not on the game view, turn it off and don't restart the timer
+            if (state.currentView !== 'game') {
+                if (isEyeProtectionActive) {
+                    overlay.classList.remove('active');
+                    isEyeProtectionActive = false;
+                }
+                return;
+            }
+
+            // If they are on the game view and it's already active, leave it active but reset timer logic if needed
+            // Actually, if it's active we just keep it active.
+            if (!isEyeProtectionActive) {
+                 eyeProtectionTimer = setTimeout(() => {
+                    overlay.classList.add('active');
+                    isEyeProtectionActive = true;
+
+                    // Show toast
+                    toast.classList.add('show');
+                    setTimeout(() => toast.classList.remove('show'), 3000);
+                }, 30000); // 30 seconds
+            }
+        }
+
+        // Listen for view changes to reset/start the timer
+        // We'll hijack the updateUI function since it gets called frequently and handles view switching
+
         function updateUI() {
+            resetEyeProtectionTimer();
+
             document.getElementById('view-home').classList.toggle('hidden', !!state.gameMode || state.currentView !== 'home');
             document.getElementById('view-matches').classList.toggle('hidden', !!state.gameMode || state.currentView !== 'matches');
             document.getElementById('view-game').classList.toggle('hidden', !state.gameMode);
