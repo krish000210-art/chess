@@ -127,6 +127,11 @@
         #eye-protection-toast.show {
             bottom: 80px;
         }
+        @media (max-width: 1024px) {
+            #eye-protection-toast.show {
+                bottom: 90px;
+            }
+        }
 
     </style>
     <link rel="manifest" href="manifest.json">
@@ -186,7 +191,7 @@
             </a>
         </nav>
         <div class="px-8 mt-auto">
-            <div class="bg-[#ffffff] p-4 border-4 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <div class="bg-[#ffffff] p-2 sm:p-4 border-4 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 <p class="text-[0.6rem] uppercase tracking-tighter text-[#000000] font-black mb-2">CALCULATED_ELO</p>
                 <div class="flex items-center gap-2">
                     <span class="w-3 h-3 border-2 border-[#000000] bg-[#FF5722] rounded-none"></span>
@@ -196,17 +201,17 @@
         </div>
     </aside>
 
-    <nav class="lg:hidden fixed bottom-0 left-0 w-full flex justify-around items-center h-16 pb-safe bg-[#ffffff] text-[#000000] border-t-4 border-[#000000] z-50">
-        <a onclick="navClick('PLAY')" id="nav-play-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-2 border-r-2 border-[#000000] flex-1 bg-[#e1e3e4]">
+    <nav class="lg:hidden fixed bottom-0 left-0 w-full flex justify-around items-center h-[4.5rem] pb-[env(safe-area-inset-bottom)] bg-[#ffffff] text-[#000000] border-t-4 border-[#000000] z-50">
+        <a onclick="navClick('PLAY')" id="nav-play-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-1 sm:px-2 border-r-2 border-[#000000] flex-1 bg-[#e1e3e4]">
             <span class="material-symbols-outlined">videogame_asset</span><span class="text-[0.55rem] tracking-[0.05rem]">PLAY</span>
         </a>
-        <a onclick="navClick('MATCHES')" id="nav-matches-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
+        <a onclick="navClick('MATCHES')" id="nav-matches-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-1 sm:px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
             <span class="material-symbols-outlined">swords</span><span class="text-[0.55rem] tracking-[0.05rem]">MATCHES</span>
         </a>
-        <a onclick="navClick('ELOTEST')" id="nav-elotest-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
+        <a onclick="navClick('ELOTEST')" id="nav-elotest-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-1 sm:px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
             <span class="material-symbols-outlined">speed</span><span class="text-[0.55rem] tracking-[0.05rem]">ELO TEST</span>
         </a>
-        <a onclick="navClick('ANALYSIS')" id="nav-analysis-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
+        <a onclick="navClick('ANALYSIS')" id="nav-analysis-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-1 sm:px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
             <span class="material-symbols-outlined">psychology</span><span class="text-[0.55rem] tracking-[0.05rem]">ANALYSIS</span>
         </a>
         <a onclick="toggleSettings(true)" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-2 flex-1 hover:bg-[#f8f9fa]">
@@ -215,7 +220,7 @@
     </nav>
 
 
-    <div id="pwa-install-popup" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-[#ffffff] border-4 border-[#000000] p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-[300] hidden flex-col items-center gap-2 max-w-sm w-11/12 font-['Space_Grotesk'] text-[#000000]">
+    <div id="pwa-install-popup" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-[#ffffff] border-4 border-[#000000] p-3 sm:p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bottom-20 sm:bottom-4 z-[300] hidden flex-col items-center gap-2 max-w-sm w-11/12 font-['Space_Grotesk'] text-[#000000]">
         <div class="flex items-center justify-between w-full">
             <span class="font-black text-sm tracking-widest">APP DOWNLOAD</span>
             <button id="pwa-close-btn" class="material-symbols-outlined hover:text-[#FF5722] transition-colors">close</button>
@@ -227,7 +232,7 @@
     </div>
 
     <div id="modal-settings" class="fixed inset-0 z-[100] bg-[#191c1d]/80 flex items-center justify-center p-4 backdrop-blur-sm hidden">
-        <div class="bg-[#f8f9fa] border-4 border-[#000000] p-8 max-w-md w-full shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] fade-in overflow-y-auto max-h-[90vh]">
+        <div class="bg-[#f8f9fa] border-4 border-[#000000] p-8 max-w-md w-[95%] sm:w-full shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-4 sm:p-8 fade-in overflow-y-auto max-h-[90vh]">
             <div class="flex justify-between items-center mb-8 border-b-4 border-[#000000] pb-4">
                 <h2 class="font-['Space_Grotesk'] font-black text-3xl uppercase tracking-tighter text-[#000000]">SYSTEM_CONFIG</h2>
                 <button onclick="toggleSettings(false)" class="bg-[#FF5722] text-[#000000] border-2 border-[#000000] p-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] transition-all">
@@ -301,37 +306,37 @@
     <main class="relative lg:ml-64 min-h-[calc(100vh-4rem)] pb-20 lg:pb-0 z-10">
 
         <div id="view-home">
-            <section class="relative pt-24 pb-32 px-6 lg:px-24 border-none text-[#191c1d]">
+            <section class="relative pt-16 pb-24 px-4 sm:px-6 lg:px-24 border-none text-[#191c1d]">
                 <div class="absolute top-20 left-[35%] w-24 h-24 border-4 border-[#3B82F6] opacity-30 float-anim hidden md:block"></div>
                 <div class="absolute bottom-32 right-[45%] w-16 h-16 bg-[#00E676] opacity-30 float-anim hidden md:block" style="animation-delay: 1s; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)"></div>
                 <div class="absolute top-1/3 left-1/4 w-8 h-8 bg-[#FF5722] rounded-full opacity-30 float-anim hidden md:block" style="animation-delay: 2s"></div>
 
                 <div class="grid lg:grid-cols-12 gap-12 items-start relative z-10 flex justify-center">
-                    <div class="lg:col-span-8 lg:col-start-3 w-full max-w-4xl bg-[#ffffff] border-4 border-[#000000] p-8 md:p-12 shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
+                    <div class="lg:col-span-8 lg:col-start-3 max-w-full w-full max-w-4xl bg-[#ffffff] border-4 border-[#000000] p-6 sm:p-8 md:p-12 shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
                         <div class="absolute top-0 left-0 w-full h-2 bg-[#00E676] animate-pulse"></div>
                         <div class="mb-6 inline-block bg-[#000000] text-[#00E676] px-4 py-2 font-['Space_Grotesk'] font-bold uppercase tracking-widest text-xs border-2 border-[#00E676] type-effect">
                             SYSTEM_READY // VER 4.3.0
                         </div>
-                        <h1 class="font-['Space_Grotesk'] font-black text-6xl md:text-8xl tracking-tighter mb-8 text-[#000000] glitch-text uppercase" data-text="NEURO_CHESS">
+                        <h1 class="font-['Space_Grotesk'] font-black text-5xl sm:text-6xl md:text-8xl tracking-tighter mb-8 text-[#000000] glitch-text uppercase" data-text="NEURO_CHESS">
                             NEURO_CHESS
                         </h1>
-                        <p class="text-xl max-w-lg mb-12 text-[#000000] font-medium leading-relaxed bg-[#f8f9fa] p-4 border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] slide-stagger delay-100">
+                        <p class="text-xl max-w-lg mb-8 sm:mb-12 text-[#000000] font-medium leading-relaxed bg-[#f8f9fa] p-4 border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] slide-stagger delay-100">
                             Challenge the Stockfish V16 Engine offline or analyze complex positions locally. Highly animated tactical neo-brutalist aesthetic.
                         </p>
 
                         <div id="home-error" class="mb-8 p-4 bg-[#FF5722] text-[#000000] border-2 border-[#000000] font-black font-mono text-sm uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hidden"></div>
 
-                        <div class="flex flex-wrap gap-4">
-                            <button onclick="toggleAiSetup(true)" class="brutalist-btn slide-stagger delay-100 group relative bg-[#3B82F6] border-4 border-[#000000] text-[#ffffff] px-8 py-4 font-['Space_Grotesk'] font-black text-lg tracking-tight flex items-center gap-3 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-[#2563EB]">
+                        <div class="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
+                            <button onclick="toggleAiSetup(true)" class="brutalist-btn slide-stagger delay-100 group relative bg-[#3B82F6] border-4 border-[#000000] text-[#ffffff] px-4 sm:px-8 py-3 sm:py-4 font-['Space_Grotesk'] font-black text-base sm:text-lg w-full sm:w-auto tracking-tight flex items-center gap-3 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-[#2563EB]">
                                 <span>VS COMPUTER</span><span class="material-symbols-outlined">memory</span>
                             </button>
-                            <button onclick="navClick('ANALYSIS')" class="brutalist-btn slide-stagger delay-200 group relative bg-[#00E676] border-4 border-[#000000] text-[#000000] px-8 py-4 font-['Space_Grotesk'] font-black text-lg tracking-tight flex items-center gap-3 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-[#00C853]">
+                            <button onclick="navClick('ANALYSIS')" class="brutalist-btn slide-stagger delay-200 group relative bg-[#00E676] border-4 border-[#000000] text-[#000000] px-4 sm:px-8 py-3 sm:py-4 font-['Space_Grotesk'] font-black text-base sm:text-lg w-full sm:w-auto tracking-tight flex items-center gap-3 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-[#00C853]">
                                 <span>FREE ANALYSIS</span><span class="material-symbols-outlined">psychology</span>
                             </button>
-                            <button onclick="navClick('TACTICS')" class="brutalist-btn slide-stagger delay-300 group relative bg-[#e1e3e4] border-4 border-[#000000] text-[#000000] px-8 py-4 font-['Space_Grotesk'] font-black text-lg tracking-tight flex items-center gap-3 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-[#d1d3d4]">
+                            <button onclick="navClick('TACTICS')" class="brutalist-btn slide-stagger delay-300 group relative bg-[#e1e3e4] border-4 border-[#000000] text-[#000000] px-4 sm:px-8 py-3 sm:py-4 font-['Space_Grotesk'] font-black text-base sm:text-lg w-full sm:w-auto tracking-tight flex items-center gap-3 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-[#d1d3d4]">
                                 <span>TACTICS DRILL</span><span class="material-symbols-outlined">crisis_alert</span>
                             </button>
-                            <button onclick="navClick('ELOTEST')" class="brutalist-btn slide-stagger delay-300 group relative bg-[#191c1d] border-4 border-[#000000] text-[#ffffff] px-8 py-4 font-['Space_Grotesk'] font-black text-lg tracking-tight flex items-center gap-3 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-[#3c3b3c]">
+                            <button onclick="navClick('ELOTEST')" class="brutalist-btn slide-stagger delay-300 group relative bg-[#191c1d] border-4 border-[#000000] text-[#ffffff] px-4 sm:px-8 py-3 sm:py-4 font-['Space_Grotesk'] font-black text-base sm:text-lg w-full sm:w-auto tracking-tight flex items-center gap-3 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-[#3c3b3c]">
                                 <span>EVALUATE ELO</span><span class="material-symbols-outlined">speed</span>
                             </button>
                         </div>
@@ -425,7 +430,7 @@
         </div>
 
         <div id="view-game" class="hidden">
-            <section id="game-section" class="py-8 px-4 lg:px-12 w-full max-w-5xl mx-auto flex flex-col items-center text-[#191c1d] min-h-[calc(100vh-4rem)] relative z-10 fade-in">
+            <section id="game-section" class="py-4 sm:py-8 px-2 sm:px-4 lg:px-12 w-full max-w-5xl mx-auto flex flex-col items-center text-[#191c1d] min-h-[calc(100vh-4rem)] relative z-10 fade-in">
 
                 <div id="gameover-overlay" class="fixed inset-0 bg-[#000000]/60 flex items-center justify-center z-[150] backdrop-blur-sm hidden">
                     <div class="bg-[#FF5722] text-[#000000] border-4 border-[#000000] p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] pointer-events-none anim-stamp">
@@ -434,7 +439,7 @@
                     </div>
                 </div>
 
-                <div class="w-full flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-8 gap-4 bg-[#ffffff] p-4 border-4 border-[#000000] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]" id="game-top-bar">
+                <div class="w-full flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-8 gap-4 bg-[#ffffff] p-2 sm:p-4 border-4 border-[#000000] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]" id="game-top-bar">
                     <div class="flex items-center gap-4">
                         <button onclick="endSession()" id="abort-btn" class="brutalist-btn px-5 py-3 font-['Space_Grotesk'] font-black text-xs uppercase tracking-widest bg-[#FF5722] text-[#000000] border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">ABORT_MATCH</button>
                         <button onclick="toggleFlip()" class="brutalist-btn p-2 text-[#ffffff] bg-[#3B82F6] border-2 border-[#000000] flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" title="Flip Board">
@@ -477,7 +482,7 @@
                 </div>
 
                 <div id="analysis-panel" class="w-full max-w-[600px] mt-8 gap-4 fade-in hidden">
-                    <div class="flex flex-col sm:flex-row items-center justify-between bg-[#000000] text-[#00E676] p-4 border-4 border-[#000000] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] gap-4 w-full">
+                    <div class="flex flex-col sm:flex-row items-center justify-between bg-[#000000] text-[#00E676] p-2 sm:p-4 border-4 border-[#000000] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] gap-4 w-full">
                         <div class="flex items-center gap-3">
                             <span class="material-symbols-outlined text-3xl">psychology</span>
                             <span class="font-['Space_Grotesk'] font-black uppercase tracking-widest text-lg">ENGINE_EVAL</span>
@@ -933,7 +938,7 @@
 
             const containerWidth = canvas.parentElement.parentElement.clientWidth || window.innerWidth;
             const maxDim = state.isFullscreen ? 900 : 600;
-            const minDimension = Math.min(containerWidth - 32, window.innerHeight * (state.isFullscreen ? 0.85 : 0.7), maxDim);
+            const minDimension = Math.min(containerWidth - 16, window.innerHeight * (state.isFullscreen ? 0.85 : (window.innerWidth < 640 ? 0.6 : 0.7)), maxDim);
             const dpr = window.devicePixelRatio || 1;
             canvas.width = minDimension * dpr; canvas.height = minDimension * dpr;
             canvas.style.width = `${minDimension}px`; canvas.style.height = `${minDimension}px`;
@@ -1119,7 +1124,7 @@
                     if(!el) return;
                     if(m==='desktop'){ el.className = `font-['Space_Grotesk'] font-black uppercase tracking-widest text-[0.6875rem] h-full flex items-center px-4 cursor-pointer transition-none ${isAct ? 'bg-[#e1e3e4] text-[#000000] border-x-4 border-[#000000]' : 'text-[#000000] hover:bg-[#f8f9fa]'}`;
                     } else if(m==='sidebar'){ el.className = `flex items-center gap-4 px-4 py-4 font-['Space_Grotesk'] uppercase text-[0.75rem] tracking-tight font-black transition-none cursor-pointer border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] ${isAct ? 'bg-[#000000] text-[#ffffff]' : 'bg-[#e1e3e4] text-[#000000]'}`;
-                    } else { el.className = `flex flex-col items-center justify-center font-black cursor-pointer h-full px-2 border-r-2 border-[#000000] flex-1 ${isAct ? 'bg-[#e1e3e4]' : 'hover:bg-[#f8f9fa]'}`; }
+                    } else { el.className = `flex flex-col items-center justify-center font-black cursor-pointer h-full px-1 sm:px-2 border-r-2 border-[#000000] flex-1 ${isAct ? 'bg-[#e1e3e4]' : 'hover:bg-[#f8f9fa]'}`; }
                 });
             });
 
@@ -1135,9 +1140,9 @@
             if (state.gameMode) {
                 const sectionClasses = state.isFullscreen
                     ? "fixed inset-0 z-[100] bg-[#f8f9fa] flex flex-col items-center p-4 md:p-8 overflow-y-auto bg-blueprint-grid scanlines text-[#191c1d]"
-                    : "py-8 px-4 lg:px-12 w-full max-w-5xl mx-auto flex flex-col items-center text-[#191c1d] min-h-[calc(100vh-4rem)] relative z-10 fade-in";
+                    : "py-4 sm:py-8 px-2 sm:px-4 lg:px-12 w-full max-w-5xl mx-auto flex flex-col items-center text-[#191c1d] min-h-[calc(100vh-4rem)] relative z-10 fade-in";
                 document.getElementById('game-section').className = sectionClasses;
-                document.getElementById('game-top-bar').className = `w-full flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-8 gap-4 bg-[#ffffff] p-4 border-4 border-[#000000] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${state.isFullscreen ? 'max-w-5xl mx-auto' : ''}`;
+                document.getElementById('game-top-bar').className = `w-full flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-8 gap-4 bg-[#ffffff] p-2 sm:p-4 border-4 border-[#000000] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${state.isFullscreen ? 'max-w-5xl mx-auto' : ''}`;
                 document.getElementById('canvas-container').className = `w-full flex justify-center mt-2 ${state.isFullscreen ? 'max-w-5xl mx-auto' : ''}`;
 
                 document.getElementById('protocol-badge').innerText = state.gameMode === 'ai' ? 'VS_ENGINE' : state.gameMode === 'tactics' ? 'TACTICS' : state.gameMode === 'elotest' ? 'ELO_TEST' : 'ANALYSIS';
