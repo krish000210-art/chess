@@ -853,7 +853,9 @@
             const sq = getSquareIdFromPos(pos.x, pos.y);
             if (sq) {
                 const targetMove = state.validMoves.find(m => m.to === sq);
-                if (targetMove && state.selectedSquare) { executeMove(state.selectedSquare, sq); return; }
+                if (targetMove && state.selectedSquare) {
+                    if (executeMove(state.selectedSquare, sq)) return;
+                }
                 const piece = state.game.get(sq);
                 if (piece && (isAnalysis || piece.color === state.playerColor)) {
                     state.selectedSquare = sq; state.validMoves = state.game.moves({ square: sq, verbose: true });
