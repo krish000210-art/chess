@@ -432,10 +432,19 @@
         <div id="view-game" class="hidden">
             <section id="game-section" class="py-4 sm:py-8 px-2 sm:px-4 lg:px-12 w-full max-w-5xl mx-auto flex flex-col items-center text-[#191c1d] min-h-[calc(100vh-4rem)] relative z-10 fade-in">
 
-                <div id="gameover-overlay" class="fixed inset-0 bg-[#000000]/60 flex items-center justify-center z-[150] backdrop-blur-sm hidden">
-                    <div class="bg-[#FF5722] text-[#000000] border-4 border-[#000000] p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] pointer-events-none anim-stamp">
-                        <h2 id="go-title" class="font-['Space_Grotesk'] font-black text-5xl md:text-7xl uppercase tracking-widest text-center">CHECKMATE</h2>
-                        <p id="go-desc" class="font-black mt-2 text-xl text-center bg-[#000000] text-[#ffffff] p-2 inline-block w-full">WHITE WINS</p>
+                <div id="gameover-overlay" class="fixed inset-0 bg-[#000000]/60 flex items-center justify-center z-[150] backdrop-blur-sm hidden flex-col">
+                    <div class="bg-[#FF5722] text-[#000000] border-4 border-[#000000] p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] anim-stamp flex flex-col items-center">
+                        <h2 id="go-title" class="font-['Space_Grotesk'] font-black text-5xl md:text-7xl uppercase tracking-widest text-center pointer-events-none">CHECKMATE</h2>
+                        <p id="go-desc" class="font-black mt-2 text-xl text-center bg-[#000000] text-[#ffffff] p-2 inline-block w-full pointer-events-none">WHITE WINS</p>
+
+                        <div id="go-actions" class="mt-6 flex flex-col sm:flex-row gap-4 w-full">
+                            <button onclick="reviewMatch()" class="brutalist-btn flex-1 bg-[#ffffff] border-4 border-[#000000] text-[#000000] px-4 py-3 font-['Space_Grotesk'] font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-[#e1e3e4] flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined">history</span> PREVIEW LAST 25 MOVES
+                            </button>
+                            <button onclick="endSession()" class="brutalist-btn flex-1 bg-[#000000] border-4 border-[#000000] text-[#ffffff] px-4 py-3 font-['Space_Grotesk'] font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-[#3c3b3c] flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined">logout</span> EXIT
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -831,6 +840,49 @@
             }
         }
 
+                let replayTimer = null;
+        let replayMoves = [];
+        let replayIndex = 0;
+
+        function reviewMatch() {
+            document.getElementById('gameover-overlay').classList.add('hidden');
+            state.gameMode = 'analysis';
+            state.isAnalysisEnabled = true;
+
+            // Get all moves from the game
+            const history = state.game.history();
+            // Take the last 25 moves
+            const startHistory = history.length > 25 ? history.slice(0, history.length - 25) : [];
+            replayMoves = history.length > 25 ? history.slice(history.length - 25) : history;
+
+            // Reset the game to the point before the last 25 moves
+            const replayGame = new Chess();
+            try { replayGame.load(state.initialFenRef); } catch(e) {}
+            startHistory.forEach(m => replayGame.move(m));
+
+            state.game = replayGame;
+            state.fenInput = state.game.fen();
+            updateUI();
+            renderBoard();
+
+            // Start replay
+            replayIndex = 0;
+            clearInterval(replayTimer);
+            replayTimer = setInterval(() => {
+                if (replayIndex < replayMoves.length) {
+                    const move = state.game.move(replayMoves[replayIndex]);
+                    if (move) playMoveSound(state.game, move);
+                    state.fenInput = state.game.fen();
+                    renderBoard();
+                    updateUI();
+                    triggerEval();
+                    replayIndex++;
+                } else {
+                    clearInterval(replayTimer);
+                }
+            }, 1200);
+        }
+
         function endSession() {
             state.gameMode = ''; state.game = new Chess(); state.playerColor = 'w';
             state.selectedSquare = null; state.validMoves = []; state.dragState = null; state.isAiThinking = false; state.isFullscreen = false;
@@ -1178,8 +1230,9 @@
                 aBtn.className = `brutalist-btn p-2 border-2 border-[#000000] items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${state.isAnalysisEnabled ? 'bg-[#00E676] text-[#000000]' : 'bg-[#ffffff] text-[#000000]'} ${state.gameMode === 'elotest' ? 'hidden' : 'flex'}`;
 
                 const overObj = document.getElementById('gameover-overlay');
-                if(isGO) {
+                if(isGO && state.gameMode !== 'analysis') {
                     overObj.classList.remove('hidden');
+                    overObj.classList.add('flex');
                     if (state.gameMode === 'elotest') {
                         document.getElementById('go-title').innerText = 'TEST COMPLETE';
                         document.getElementById('go-desc').innerText = `PERFORMANCE ELO: ${state.perfElo}`;
@@ -1187,7 +1240,10 @@
                         document.getElementById('go-title').innerText = state.game.in_checkmate() ? 'CHECKMATE' : 'DRAW';
                         document.getElementById('go-desc').innerText = state.game.in_checkmate() ? `${state.game.turn()==='w'?'BLACK':'WHITE'} WINS` : 'MATCH TERMINATED';
                     }
-                } else overObj.classList.add('hidden');
+                } else {
+                    overObj.classList.add('hidden');
+                    overObj.classList.remove('flex');
+                }
 
                 const aPan = document.getElementById('analysis-panel');
                 const ebW = document.getElementById('eval-bar-wrapper');
