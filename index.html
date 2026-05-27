@@ -1038,7 +1038,7 @@
                         ctx.fillStyle = isDarkBoard ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 230, 118, 0.4)';
                         ctx.fillRect(x, y, sSize, sSize);
                     } else if (state.validMoves.some(m => m.to === sqId)) {
-                        ctx.fillStyle = '#000000'; ctx.fillRect(x + sSize/2 - sSize*0.15, y + sSize/2 - sSize*0.15, sSize*0.3, sSize*0.3);
+                        ctx.fillStyle = '#000000'; ctx.fillRect(x + sSize/2 - sSize*0.15, y + sSize/2 - sSize*0.15, sSize*0.3, sSize*0.3); ctx.fillStyle = '#00E676'; ctx.fillRect(x + sSize/2 - sSize*0.075, y + sSize/2 - sSize*0.075, sSize*0.15, sSize*0.15);
                     }
                 }
             }
