@@ -974,7 +974,7 @@
         function handlePointerDown(e) {
             initAudio();
             try { if (e.pointerId && e.target.setPointerCapture) e.target.setPointerCapture(e.pointerId); } catch(ex){}
-            const isAnalysis = state.gameMode === 'analysis' || state.gameMode === 'tactics';
+            const isAnalysis = state.gameMode === 'analysis' || state.gameMode === 'tactics' || state.gameMode === 'local';
             if (state.isAiThinking || (!isAnalysis && state.game.turn() !== state.playerColor) || state.game.game_over()) return;
             
             const pos = getPointerPos(e);
@@ -983,7 +983,8 @@
                 const targetMove = state.validMoves.find(m => m.to === sq);
                 if (targetMove && state.selectedSquare) { executeMove(state.selectedSquare, sq); return; }
                 const piece = state.game.get(sq);
-                if (piece && (isAnalysis || piece.color === state.playerColor)) {
+                const canSelectPiece = isAnalysis ? piece.color === state.game.turn() : piece.color === state.playerColor;
+                if (piece && canSelectPiece) {
                     state.selectedSquare = sq; state.validMoves = state.game.moves({ square: sq, verbose: true });
                     state.dragState = { isDragging: true, source: sq, piece: piece, x: pos.x, y: pos.y }; renderBoard();
                 } else { state.selectedSquare = null; state.validMoves = []; renderBoard(); }
