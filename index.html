@@ -160,6 +160,7 @@
         <nav class="hidden md:flex items-center gap-8 h-full">
             <a onclick="navClick('PLAY')" id="nav-play-desktop" class="font-['Space_Grotesk'] font-black uppercase tracking-widest text-[0.6875rem] h-full flex items-center px-4 cursor-pointer transition-none bg-[#e1e3e4] border-x-4 border-[#000000]">PLAY</a>
             <a onclick="navClick('ELOTEST')" id="nav-elotest-desktop" class="font-['Space_Grotesk'] font-black uppercase tracking-widest text-[0.6875rem] h-full flex items-center px-4 cursor-pointer transition-none hover:bg-[#f8f9fa]">ELO TEST</a>
+            <a onclick="navClick('LOCAL')" id="nav-local-desktop" class="font-['Space_Grotesk'] font-black uppercase tracking-widest text-[0.6875rem] h-full flex items-center px-4 cursor-pointer transition-none hover:bg-[#f8f9fa]">PASS & PLAY</a>
             <a onclick="navClick('ANALYSIS')" id="nav-analysis-desktop" class="font-['Space_Grotesk'] font-black uppercase tracking-widest text-[0.6875rem] h-full flex items-center px-4 cursor-pointer transition-none hover:bg-[#f8f9fa]">ANALYSIS</a>
             <a onclick="navClick('TACTICS')" id="nav-tactics-desktop" class="font-['Space_Grotesk'] font-black uppercase tracking-widest text-[0.6875rem] h-full flex items-center px-4 cursor-pointer transition-none hover:bg-[#f8f9fa]">TACTICS</a>
         </nav>
@@ -186,6 +187,9 @@
             <a onclick="navClick('TACTICS')" id="nav-tactics-sidebar" class="flex items-center gap-4 px-4 py-4 font-['Space_Grotesk'] uppercase text-[0.75rem] tracking-tight font-black transition-none cursor-pointer border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] bg-[#ffffff] text-[#000000]">
                 <span class="material-symbols-outlined text-lg">crisis_alert</span><span>TACTICS</span>
             </a>
+            <a onclick="navClick('LOCAL')" id="nav-local-sidebar" class="flex items-center gap-4 px-4 py-4 font-['Space_Grotesk'] uppercase text-[0.75rem] tracking-tight font-black transition-none cursor-pointer border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] bg-[#ffffff] text-[#000000]">
+                <span class="material-symbols-outlined text-lg">people</span><span>PASS & PLAY</span>
+            </a>
             <a onclick="navClick('ANALYSIS')" id="nav-analysis-sidebar" class="flex items-center gap-4 px-4 py-4 font-['Space_Grotesk'] uppercase text-[0.75rem] tracking-tight font-black transition-none cursor-pointer border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] bg-[#ffffff] text-[#000000]">
                 <span class="material-symbols-outlined text-lg">psychology</span><span>FREE ANALYSIS</span>
             </a>
@@ -210,6 +214,9 @@
         </a>
         <a onclick="navClick('ELOTEST')" id="nav-elotest-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-1 sm:px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
             <span class="material-symbols-outlined">speed</span><span class="text-[0.55rem] tracking-[0.05rem]">ELO TEST</span>
+        </a>
+        <a onclick="navClick('LOCAL')" id="nav-local-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-1 sm:px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
+            <span class="material-symbols-outlined">people</span><span class="text-[0.55rem] tracking-[0.05rem]">LOCAL</span>
         </a>
         <a onclick="navClick('ANALYSIS')" id="nav-analysis-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-1 sm:px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
             <span class="material-symbols-outlined">psychology</span><span class="text-[0.55rem] tracking-[0.05rem]">ANALYSIS</span>
@@ -263,6 +270,15 @@
 
                     <p class="text-[0.65rem] font-bold uppercase tracking-widest text-[#4c616b] mb-2 mt-6">ENGINE_ASSIST_ARROW</p>
                     <div class="flex flex-wrap gap-2" id="arrow-btns"></div>
+
+                    <p class="text-[0.65rem] font-bold uppercase tracking-widest text-[#4c616b] mb-2 mt-6">AUTO_FLIP (PASS & PLAY)</p>
+                    <div class="flex flex-wrap gap-2" id="autoflip-btns"></div>
+
+                    <p class="text-[0.65rem] font-bold uppercase tracking-widest text-[#4c616b] mb-2 mt-6">ANALYSIS_DEPTH_LIMIT</p>
+                    <div class="flex items-center gap-2">
+                        <input type="range" id="analysis-depth-slider" min="5" max="20" class="w-full h-2 bg-[#e1e3e4] rounded-lg appearance-none cursor-pointer" oninput="document.getElementById('depth-disp').innerText = this.value; state.profile.analysisDepth = parseInt(this.value); saveProfile();" />
+                        <span id="depth-disp" class="font-['Space_Grotesk'] font-black w-8 text-center text-[#000000]"></span>
+                    </div>
                 </div>
 
                 <div class="border-t-2 border-dashed border-[#c6c6c6] pt-6 slide-stagger delay-300">
@@ -673,7 +689,8 @@
             clearTimeout(state.evalTimer);
             state.evalTimer = setTimeout(async () => {
                 try {
-                    const response = await fetch(`https://stockfish.online/api/s/v2.php?fen=${encodeURIComponent(currentFen)}&depth=13`);
+                    const analysisDepth = state.profile.analysisDepth || 13;
+                    const response = await fetch(`https://stockfish.online/api/s/v2.php?fen=${encodeURIComponent(currentFen)}&depth=${analysisDepth}`);
                     const data = await response.json();
                     if (data.success && state.game.fen() === currentFen) { 
                         let evStr = data.evaluation !== undefined ? data.evaluation : data.score;
@@ -785,6 +802,12 @@
                     triggerEval(); 
                     checkGameOver();
                     
+                    if (state.gameMode === 'local' && state.profile.autoFlipLocal) {
+                        state.isBoardFlipped = state.game.turn() === 'b';
+                        renderBoard();
+                        updateUI();
+                    }
+
                     if ((state.gameMode === 'ai' || state.gameMode === 'elotest') && !state.game.game_over()) {
                         setTimeout(() => {
                             if (state.gameMode) makeAIMove();
@@ -804,7 +827,12 @@
             
             if (view === 'PLAY') { state.currentView = 'home'; state.errorMsg = ''; } 
             else if (view === 'MATCHES') { state.currentView = 'matches'; state.errorMsg = ''; } 
-            else if (view === 'ANALYSIS') {
+
+            else if (view === 'LOCAL') {
+                state.gameMode = 'local'; state.playerColor = 'w'; state.game = new Chess(); state.isAnalysisEnabled = false; state.currentView = 'home';
+                state.moveQuality = null; state.bestEngineMove = null; state.evalScoreRef = 0;
+                state.initialFenRef = state.game.fen(); state.prevFenRef = state.game.fen(); state.fenInput = state.game.fen();
+            } else if (view === 'ANALYSIS') {
                 state.gameMode = 'analysis'; state.playerColor = 'w'; state.game = new Chess(); state.isAnalysisEnabled = true; state.currentView = 'home';
                 state.moveQuality = null; state.bestEngineMove = null; state.evalScoreRef = 0; 
                 state.initialFenRef = state.game.fen(); state.prevFenRef = state.game.fen(); state.fenInput = state.game.fen();
@@ -1175,10 +1203,11 @@
             document.getElementById('view-matches').classList.toggle('hidden', !!state.gameMode || state.currentView !== 'matches');
             document.getElementById('view-game').classList.toggle('hidden', !state.gameMode);
             
-            const views = ['PLAY', 'MATCHES', 'ANALYSIS', 'TACTICS', 'ELOTEST'];
+            const views = ['PLAY', 'MATCHES', 'LOCAL', 'ANALYSIS', 'TACTICS', 'ELOTEST'];
             views.forEach(v => {
                 const isAct = (v==='PLAY' && state.currentView==='home' && !state.gameMode) ||
                               (v==='MATCHES' && state.currentView==='matches') ||
+                              (v==='LOCAL' && state.gameMode==='local') ||
                               (v==='ANALYSIS' && state.gameMode==='analysis') ||
                               (v==='ELOTEST' && state.gameMode==='elotest') ||
                               (v==='TACTICS' && state.gameMode==='tactics');
@@ -1208,15 +1237,16 @@
                 document.getElementById('game-top-bar').className = `w-full flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-8 gap-4 bg-[#ffffff] p-2 sm:p-4 border-4 border-[#000000] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${state.isFullscreen ? 'max-w-5xl mx-auto' : ''}`;
                 document.getElementById('canvas-container').className = `w-full flex justify-center mt-2 ${state.isFullscreen ? 'max-w-5xl mx-auto' : ''}`;
                 
-                document.getElementById('protocol-badge').innerText = state.gameMode === 'ai' ? 'VS_ENGINE' : state.gameMode === 'tactics' ? 'TACTICS' : state.gameMode === 'elotest' ? 'ELO_TEST' : 'ANALYSIS';
-                document.getElementById('protocol-badge').className = `text-lg font-['Space_Grotesk'] font-black uppercase px-1 border-2 border-[#000000] ${state.gameMode === 'ai' || state.gameMode === 'elotest' ? 'bg-[#00E676]' : 'bg-[#ffffff]'}`;
+                document.getElementById('protocol-badge').innerText = state.gameMode === 'ai' ? 'VS_ENGINE' : state.gameMode === 'tactics' ? 'TACTICS' : state.gameMode === 'elotest' ? 'ELO_TEST' : state.gameMode === 'local' ? 'PASS_AND_PLAY' : 'ANALYSIS';
+                document.getElementById('protocol-badge').className = `text-lg font-['Space_Grotesk'] font-black uppercase px-1 border-2 border-[#000000] ${state.gameMode === 'ai' || state.gameMode === 'elotest' || state.gameMode === 'local' ? 'bg-[#00E676]' : 'bg-[#ffffff]'}`;
                 
-                document.getElementById('game-id-text').innerText = state.gameMode==='analysis'||state.gameMode==='tactics' ? 'SYSTEM_OVERRIDE' : (state.playerColor==='w' ? 'WHITE_COMMAND' : 'BLACK_COMMAND');
+                document.getElementById('game-id-text').innerText = state.gameMode==='analysis'||state.gameMode==='tactics' ? 'SYSTEM_OVERRIDE' : state.gameMode==='local' ? (state.game.turn()==='w' ? 'WHITE_TURN' : 'BLACK_TURN') : (state.playerColor==='w' ? 'WHITE_COMMAND' : 'BLACK_COMMAND');
 
-                const isOurTurn = state.gameMode === 'analysis' || state.gameMode === 'tactics' || state.game.turn() === state.playerColor;
+                const isOurTurn = state.gameMode === 'analysis' || state.gameMode === 'tactics' || state.gameMode === 'local' || state.game.turn() === state.playerColor;
                 const isGO = state.game.game_over();
                 let gmsg = "", bgC = "bg-[#ffffff]", tC = "text-[#000000]";
-                if(state.gameMode==='analysis') { gmsg="FREE_ANALYSIS_MODE"; bgC="bg-[#e1e3e4]"; }
+                if(state.gameMode==='local') { gmsg=`PASS & PLAY // ${state.game.turn()==='w'?'WHITE':'BLACK'} TO MOVE`; bgC="bg-[#ffffff]"; }
+                else if(state.gameMode==='analysis') { gmsg="FREE_ANALYSIS_MODE"; bgC="bg-[#e1e3e4]"; }
                 else if(state.gameMode==='tactics') { gmsg=`TACTICS_DRILL: ${state.tacticDesc}`; bgC="bg-[#e1e3e4]"; }
                 else if(state.game.in_checkmate()) { gmsg=`CHECKMATE // ${state.game.turn()==='w'?'BLACK':'WHITE'} WINS`; bgC="bg-[#FF5722]"; }
                 else if(state.game.in_draw()) { gmsg="DRAW_DETECTED"; bgC="bg-[#FF5722]"; }
@@ -1370,6 +1400,20 @@
                 <button onclick="state.profile.showEngineArrow=false; saveProfile()" class="brutalist-btn px-4 py-2 text-xs font-bold border-2 ${state.profile.showEngineArrow===false?'border-[#000000] bg-[#000000] text-white':'border-[#000000] bg-white text-black'}">DISABLED</button>
             `;
             document.getElementById('arrow-btns').innerHTML = arb;
+
+            const flb = `
+                <button onclick="state.profile.autoFlipLocal=true; saveProfile()" class="brutalist-btn px-4 py-2 text-xs font-bold border-2 ${state.profile.autoFlipLocal!==false?'border-[#000000] bg-[#000000] text-white':'border-[#000000] bg-white text-black'}">ENABLED</button>
+                <button onclick="state.profile.autoFlipLocal=false; saveProfile()" class="brutalist-btn px-4 py-2 text-xs font-bold border-2 ${state.profile.autoFlipLocal===false?'border-[#000000] bg-[#000000] text-white':'border-[#000000] bg-white text-black'}">DISABLED</button>
+            `;
+            const flbContainer = document.getElementById('autoflip-btns');
+            if (flbContainer) flbContainer.innerHTML = flb;
+
+            const depthSlider = document.getElementById('analysis-depth-slider');
+            const depthDisp = document.getElementById('depth-disp');
+            if (depthSlider && depthDisp) {
+                depthSlider.value = state.profile.analysisDepth || 13;
+                depthDisp.innerText = depthSlider.value;
+            }
         }
 
         
