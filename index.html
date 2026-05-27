@@ -45,6 +45,8 @@
         }
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .bg-blueprint-grid { 
           background-color: #f8f9fa; 
           background-image: linear-gradient(rgba(59, 130, 246, 0.1) 2px, transparent 2px), linear-gradient(90deg, rgba(59, 130, 246, 0.1) 2px, transparent 2px); 
@@ -205,24 +207,24 @@
         </div>
     </aside>
 
-    <nav class="lg:hidden fixed bottom-0 left-0 w-full flex justify-around items-center h-[4.5rem] pb-[env(safe-area-inset-bottom)] bg-[#ffffff] text-[#000000] border-t-4 border-[#000000] z-50">
-        <a onclick="navClick('PLAY')" id="nav-play-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-1 sm:px-2 border-r-2 border-[#000000] flex-1 bg-[#e1e3e4]">
-            <span class="material-symbols-outlined">videogame_asset</span><span class="text-[0.55rem] tracking-[0.05rem]">PLAY</span>
+    <nav class="lg:hidden fixed bottom-0 left-0 w-full flex justify-between items-center h-[4.5rem] pb-[env(safe-area-inset-bottom)] bg-[#ffffff] text-[#000000] border-t-4 border-[#000000] z-50 overflow-x-auto overflow-y-hidden hide-scrollbar">
+        <a onclick="navClick('PLAY')" id="nav-play-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full min-w-[3.5rem] px-1 sm:px-2 border-r-2 border-[#000000] flex-1 bg-[#e1e3e4]">
+            <span class="material-symbols-outlined text-[1.2rem]">videogame_asset</span><span class="font-['Space_Grotesk'] text-[0.5rem] tracking-tighter uppercase hidden sm:block mt-0.5">PLAY</span>
         </a>
-        <a onclick="navClick('MATCHES')" id="nav-matches-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-1 sm:px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
-            <span class="material-symbols-outlined">swords</span><span class="text-[0.55rem] tracking-[0.05rem]">MATCHES</span>
+        <a onclick="navClick('MATCHES')" id="nav-matches-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full min-w-[3.5rem] px-1 sm:px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
+            <span class="material-symbols-outlined text-[1.2rem]">swords</span><span class="font-['Space_Grotesk'] text-[0.5rem] tracking-tighter uppercase hidden sm:block mt-0.5">MATCHES</span>
         </a>
-        <a onclick="navClick('ELOTEST')" id="nav-elotest-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-1 sm:px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
-            <span class="material-symbols-outlined">speed</span><span class="text-[0.55rem] tracking-[0.05rem]">ELO TEST</span>
+        <a onclick="navClick('ELOTEST')" id="nav-elotest-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full min-w-[3.5rem] px-1 sm:px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
+            <span class="material-symbols-outlined text-[1.2rem]">speed</span><span class="font-['Space_Grotesk'] text-[0.5rem] tracking-tighter uppercase hidden sm:block mt-0.5">ELO</span>
         </a>
-        <a onclick="navClick('LOCAL')" id="nav-local-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-1 sm:px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
-            <span class="material-symbols-outlined">people</span><span class="text-[0.55rem] tracking-[0.05rem]">LOCAL</span>
+        <a onclick="navClick('LOCAL')" id="nav-local-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full min-w-[3.5rem] px-1 sm:px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
+            <span class="material-symbols-outlined text-[1.2rem]">people</span><span class="font-['Space_Grotesk'] text-[0.5rem] tracking-tighter uppercase hidden sm:block mt-0.5">LOCAL</span>
         </a>
-        <a onclick="navClick('ANALYSIS')" id="nav-analysis-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-1 sm:px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
-            <span class="material-symbols-outlined">psychology</span><span class="text-[0.55rem] tracking-[0.05rem]">ANALYSIS</span>
+        <a onclick="navClick('ANALYSIS')" id="nav-analysis-mobile" class="flex flex-col items-center justify-center font-black cursor-pointer h-full min-w-[3.5rem] px-1 sm:px-2 border-r-2 border-[#000000] flex-1 hover:bg-[#f8f9fa]">
+            <span class="material-symbols-outlined text-[1.2rem]">psychology</span><span class="font-['Space_Grotesk'] text-[0.5rem] tracking-tighter uppercase hidden sm:block mt-0.5">ANALYSIS</span>
         </a>
-        <a onclick="toggleSettings(true)" class="flex flex-col items-center justify-center font-black cursor-pointer h-full px-2 flex-1 hover:bg-[#f8f9fa]">
-            <span class="material-symbols-outlined">settings</span><span class="text-[0.55rem] tracking-[0.05rem]">CONFIG</span>
+        <a onclick="toggleSettings(true)" class="flex flex-col items-center justify-center font-black cursor-pointer h-full min-w-[3.5rem] px-1 sm:px-2 flex-1 hover:bg-[#f8f9fa]">
+            <span class="material-symbols-outlined text-[1.2rem]">settings</span><span class="font-['Space_Grotesk'] text-[0.5rem] tracking-tighter uppercase hidden sm:block mt-0.5">CONFIG</span>
         </a>
     </nav>
 
@@ -270,10 +272,10 @@
 
                     <p class="text-[0.65rem] font-bold uppercase tracking-widest text-[#4c616b] mb-2 mt-6">ENGINE_ASSIST_ARROW</p>
                     <div class="flex flex-wrap gap-2" id="arrow-btns"></div>
-
+                    
                     <p class="text-[0.65rem] font-bold uppercase tracking-widest text-[#4c616b] mb-2 mt-6">AUTO_FLIP (PASS & PLAY)</p>
                     <div class="flex flex-wrap gap-2" id="autoflip-btns"></div>
-
+                    
                     <p class="text-[0.65rem] font-bold uppercase tracking-widest text-[#4c616b] mb-2 mt-6">ANALYSIS_DEPTH_LIMIT</p>
                     <div class="flex items-center gap-2">
                         <input type="range" id="analysis-depth-slider" min="5" max="20" class="w-full h-2 bg-[#e1e3e4] rounded-lg appearance-none cursor-pointer" oninput="document.getElementById('depth-disp').innerText = this.value; state.profile.analysisDepth = parseInt(this.value); saveProfile();" />
@@ -807,7 +809,7 @@
                         renderBoard();
                         updateUI();
                     }
-
+                    
                     if ((state.gameMode === 'ai' || state.gameMode === 'elotest') && !state.game.game_over()) {
                         setTimeout(() => {
                             if (state.gameMode) makeAIMove();
@@ -827,7 +829,7 @@
             
             if (view === 'PLAY') { state.currentView = 'home'; state.errorMsg = ''; } 
             else if (view === 'MATCHES') { state.currentView = 'matches'; state.errorMsg = ''; } 
-
+            
             else if (view === 'LOCAL') {
                 state.gameMode = 'local'; state.playerColor = 'w'; state.game = new Chess(); state.isAnalysisEnabled = false; state.currentView = 'home';
                 state.moveQuality = null; state.bestEngineMove = null; state.evalScoreRef = 0;
@@ -974,7 +976,7 @@
         function handlePointerDown(e) {
             initAudio();
             try { if (e.pointerId && e.target.setPointerCapture) e.target.setPointerCapture(e.pointerId); } catch(ex){}
-            const isAnalysis = state.gameMode === 'analysis' || state.gameMode === 'tactics';
+            const isAnalysis = state.gameMode === 'analysis' || state.gameMode === 'tactics' || state.gameMode === 'local';
             if (state.isAiThinking || (!isAnalysis && state.game.turn() !== state.playerColor) || state.game.game_over()) return;
             
             const pos = getPointerPos(e);
@@ -983,7 +985,8 @@
                 const targetMove = state.validMoves.find(m => m.to === sq);
                 if (targetMove && state.selectedSquare) { executeMove(state.selectedSquare, sq); return; }
                 const piece = state.game.get(sq);
-                if (piece && (isAnalysis || piece.color === state.playerColor)) {
+                const canSelectPiece = isAnalysis ? piece.color === state.game.turn() : piece.color === state.playerColor;
+                if (piece && canSelectPiece) {
                     state.selectedSquare = sq; state.validMoves = state.game.moves({ square: sq, verbose: true });
                     state.dragState = { isDragging: true, source: sq, piece: piece, x: pos.x, y: pos.y }; renderBoard();
                 } else { state.selectedSquare = null; state.validMoves = []; renderBoard(); }
@@ -1216,7 +1219,7 @@
                     if(!el) return;
                     if(m==='desktop'){ el.className = `font-['Space_Grotesk'] font-black uppercase tracking-widest text-[0.6875rem] h-full flex items-center px-4 cursor-pointer transition-none ${isAct ? 'bg-[#e1e3e4] text-[#000000] border-x-4 border-[#000000]' : 'text-[#000000] hover:bg-[#f8f9fa]'}`;
                     } else if(m==='sidebar'){ el.className = `flex items-center gap-4 px-4 py-4 font-['Space_Grotesk'] uppercase text-[0.75rem] tracking-tight font-black transition-none cursor-pointer border-2 border-[#000000] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] ${isAct ? 'bg-[#000000] text-[#ffffff]' : 'bg-[#e1e3e4] text-[#000000]'}`;
-                    } else { el.className = `flex flex-col items-center justify-center font-black cursor-pointer h-full px-1 sm:px-2 border-r-2 border-[#000000] flex-1 ${isAct ? 'bg-[#e1e3e4]' : 'hover:bg-[#f8f9fa]'}`; }
+                    } else { el.className = `flex flex-col items-center justify-center font-black cursor-pointer h-full min-w-[3.5rem] px-1 sm:px-2 border-r-2 border-[#000000] flex-1 ${isAct ? 'bg-[#e1e3e4]' : 'hover:bg-[#f8f9fa]'}`; }
                 });
             });
 
