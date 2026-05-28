@@ -742,7 +742,8 @@
                     opponent = 'ELO_TEST_SYSTEM';
                     const acpl = state.cplMoves > 0 ? state.cplTotal / state.cplMoves : 100;
                     state.perfElo = Math.max(400, Math.min(3200, Math.round(3000 - (acpl * 20))));
-                    state.profile.elo = state.perfElo;
+                    // Smoothly adjust the user's overall ELO instead of directly overwriting it
+                    state.profile.elo = Math.round((state.profile.elo * 0.8) + (state.perfElo * 0.2));
                 } else {
                     opponent = state.gameMode === 'ai' ? `CPU_LVL_${state.aiLevel}` : 'PUZZLE_AGENT';
                     state.profile.elo += isWin ? 25 : isDraw ? 0 : -15;
