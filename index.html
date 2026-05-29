@@ -693,8 +693,30 @@
                             const playerWhoMoved = state.game.turn() === 'w' ? 'b' : 'w';
                             let delta = playerWhoMoved === 'w' ? (numericScore - state.evalScoreRef) : (state.evalScoreRef - numericScore);
                             if (state.gameMode === 'elotest' && playerWhoMoved === state.playerColor) {
-                                let cplLoss = Math.max(0, -delta * 100); cplLoss = Math.min(1000, cplLoss);
-                                state.cplTotal += cplLoss; state.cplMoves += 1;
+                                // 2 points for excellent/good (> -0.5), 1 point for inaccuracy/mistake (<= -0.5 and > -3.0), 0 for blunder (<= -3.0)
+                                let points = 2;
+                                if (delta <= -3.0) points = 0;
+                                else if (delta <= -0.5) points = 1;
+                                state.cplTotal += points;
+                                state.cplMoves += 1;
+
+                                // End test after 10 moves
+                                if (state.cplMoves >= 10) {
+                                    setTimeout(() => checkGameOver(true), 500);
+                                }
+                            } else if (state.gameMode === 'ai' && playerWhoMoved === state.playerColor) {
+                                // Dynamically adjust Elo during a regular match based on move quality
+                                let eloChange = 0;
+                                if (delta <= -3.0) eloChange = -8;       // Blunder
+                                else if (delta <= -1.0) eloChange = -4;  // Mistake
+                                else if (delta <= -0.5) eloChange = -2;  // Inaccuracy
+                                else if (delta > 1.5) eloChange = 5;     // Brilliant
+                                else if (delta > 0.5) eloChange = 2;     // Excellent
+
+                                if (eloChange !== 0) {
+                                    state.profile.elo = Math.max(100, state.profile.elo + eloChange);
+                                    saveProfile(); // Persist and update UI
+                                }
                             }
                             let quality = { text: 'GOOD_MOVE', color: 'text-[#00E676]' };
                             if (delta <= -3.0) quality = { text: 'BLUNDER', color: 'text-[#ba1a1a]' };
@@ -713,20 +735,27 @@
             }, 400);
         }
 
-        function checkGameOver() {
-            if (state.game.game_over() && !state.gameEndedTracked && state.gameMode !== 'analysis') {
+        function checkGameOver(forceEnd = false) {
+            if ((state.game.game_over() || forceEnd) && !state.gameEndedTracked && state.gameMode !== 'analysis') {
                 state.gameEndedTracked = true;
                 const isWin = state.game.in_checkmate() && state.game.turn() !== state.playerColor;
                 const isDraw = state.game.in_draw() || state.game.in_stalemate() || state.game.in_threefold_repetition();
                 let opponent = '', resultStr = isWin ? 'WIN' : isDraw ? 'DRAW' : 'LOSS';
                 if (state.gameMode === 'elotest') {
                     opponent = 'ELO_TEST_SYSTEM';
-                    const acpl = state.cplMoves > 0 ? state.cplTotal / state.cplMoves : 100;
-                    state.perfElo = Math.max(400, Math.min(3200, Math.round(3000 - (acpl * 20))));
+                    const points = state.cplTotal; // Max 20 points
+                    let eloResult = 800;
+                    if (points >= 20) eloResult = 2100;
+                    else if (points >= 18) eloResult = 1900;
+                    else if (points >= 15) eloResult = 1700;
+                    else if (points >= 8) eloResult = 1400;
+                    else if (points >= 5) eloResult = 900;
+
+                    state.perfElo = eloResult;
                     state.profile.elo = state.perfElo;
                 } else {
                     opponent = state.gameMode === 'ai' ? `CPU_LVL_${state.aiLevel}` : 'PUZZLE_AGENT';
-                    state.profile.elo += isWin ? 25 : isDraw ? 0 : -15;
+                    state.profile.elo += isWin ? 10 : isDraw ? 0 : -10; // Reduced because Elo changes per-move now
                 }
                 state.profile.matches += 1; if(isWin) state.profile.wins += 1;
                 state.profile.history.unshift({ date: Date.now(), result: resultStr, color: state.playerColor, against: opponent });
@@ -1246,7 +1275,7 @@
                     overObj.classList.add('flex');
                     if (state.gameMode === 'elotest') {
                         document.getElementById('go-title').innerText = 'TEST COMPLETE';
-                        document.getElementById('go-desc').innerText = `PERFORMANCE ELO: ${state.perfElo}`;
+                        document.getElementById('go-desc').innerText = `${state.cplTotal}/20 POINTS -> ELO: ${state.perfElo}`;
                     } else {
                         document.getElementById('go-title').innerText = state.game.in_checkmate() ? 'CHECKMATE' : 'DRAW';
                         document.getElementById('go-desc').innerText = state.game.in_checkmate() ? `${state.game.turn()==='w'?'BLACK':'WHITE'} WINS` : 'MATCH TERMINATED';
