@@ -694,9 +694,9 @@
                             let delta = playerWhoMoved === 'w' ? (numericScore - state.evalScoreRef) : (state.evalScoreRef - numericScore);
                             if (state.gameMode === 'elotest' && playerWhoMoved === state.playerColor) {
                                 // 2 points for excellent/good (> -0.5), 1 point for inaccuracy/mistake (<= -0.5 and > -3.0), 0 for blunder (<= -3.0)
-                                let points = 2;
+                                let points = 100;
                                 if (delta <= -3.0) points = 0;
-                                else if (delta <= -0.5) points = 1;
+                                else if (delta <= -0.5) points = 50;
                                 state.cplTotal += points;
                                 state.cplMoves += 1;
 
@@ -741,15 +741,15 @@
                 const isWin = state.game.in_checkmate() && state.game.turn() !== state.playerColor;
                 const isDraw = state.game.in_draw() || state.game.in_stalemate() || state.game.in_threefold_repetition();
                 let opponent = '', resultStr = isWin ? 'WIN' : isDraw ? 'DRAW' : 'LOSS';
-                if (state.gameMode === 'elotest') {
+                                if (state.gameMode === 'elotest') {
                     opponent = 'ELO_TEST_SYSTEM';
-                    const points = state.cplTotal; // Max 20 points
-                    let eloResult = 800;
-                    if (points >= 20) eloResult = 2100;
-                    else if (points >= 18) eloResult = 1900;
-                    else if (points >= 15) eloResult = 1700;
-                    else if (points >= 8) eloResult = 1400;
-                    else if (points >= 5) eloResult = 900;
+                    const points = state.cplTotal / 5; // Max 200 points
+                    let eloResult = 800; // < 50
+                    if (points >= 200) eloResult = 2000;
+                    else if (points >= 180) eloResult = 1800;
+                    else if (points >= 150) eloResult = 1600;
+                    else if (points >= 80) eloResult = 1200;
+                    else if (points >= 50) eloResult = 800;
 
                     state.perfElo = eloResult;
                     state.profile.elo = state.perfElo;
@@ -1275,7 +1275,7 @@
                     overObj.classList.add('flex');
                     if (state.gameMode === 'elotest') {
                         document.getElementById('go-title').innerText = 'TEST COMPLETE';
-                        document.getElementById('go-desc').innerText = `${state.cplTotal}/20 POINTS -> ELO: ${state.perfElo}`;
+                        document.getElementById('go-desc').innerText = `${state.cplTotal / 5}/200 POINTS -> ELO: ${state.perfElo}`;
                     } else {
                         document.getElementById('go-title').innerText = state.game.in_checkmate() ? 'CHECKMATE' : 'DRAW';
                         document.getElementById('go-desc').innerText = state.game.in_checkmate() ? `${state.game.turn()==='w'?'BLACK':'WHITE'} WINS` : 'MATCH TERMINATED';
