@@ -321,6 +321,25 @@
         </div>
     </div>
 
+
+    <div id="modal-replay" class="fixed bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 z-[200] hidden">
+        <div class="bg-[#ffffff] border-4 border-[#000000] p-2 sm:p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex items-center gap-2 sm:gap-4 font-['Space_Grotesk'] text-[#000000]">
+            <button onclick="prevReplayMove()" class="brutalist-btn bg-[#e1e3e4] border-2 border-[#000000] p-2 hover:bg-[#d1d3d4] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                <span class="material-symbols-outlined">skip_previous</span>
+            </button>
+            <button onclick="toggleReplayPlay()" id="replay-play-btn" class="brutalist-btn bg-[#00E676] border-2 border-[#000000] p-2 sm:px-6 hover:bg-[#00C853] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black uppercase text-xs sm:text-sm flex items-center gap-2 w-24 justify-center">
+                <span class="material-symbols-outlined" id="replay-play-icon">pause</span> <span id="replay-play-text">PAUSE</span>
+            </button>
+            <button onclick="nextReplayMove()" class="brutalist-btn bg-[#e1e3e4] border-2 border-[#000000] p-2 hover:bg-[#d1d3d4] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                <span class="material-symbols-outlined">skip_next</span>
+            </button>
+            <div class="w-px h-8 bg-[#000000] mx-1 sm:mx-2"></div>
+            <button onclick="closeReplay()" class="brutalist-btn bg-[#FF5722] border-2 border-[#000000] p-2 hover:bg-[#E64A19] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-[#000000]">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+    </div>
+
     <main class="relative lg:ml-64 min-h-[calc(100dvh-4rem)] pb-20 lg:pb-0 z-10">
         
         <div id="view-home">
@@ -457,7 +476,7 @@
                         
                         <div id="go-actions" class="mt-6 flex flex-col sm:flex-row gap-4 w-full">
                             <button onclick="reviewMatch()" class="brutalist-btn flex-1 bg-[#ffffff] border-4 border-[#000000] text-[#000000] px-4 py-3 font-['Space_Grotesk'] font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-[#e1e3e4] flex items-center justify-center gap-2">
-                                <span class="material-symbols-outlined">history</span> PREVIEW LAST 25 MOVES
+                                <span class="material-symbols-outlined">history</span> PREVIEW ALL MOVES
                             </button>
                             <button onclick="endSession()" class="brutalist-btn flex-1 bg-[#000000] border-4 border-[#000000] text-[#ffffff] px-4 py-3 font-['Space_Grotesk'] font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-[#3c3b3c] flex items-center justify-center gap-2">
                                 <span class="material-symbols-outlined">logout</span> EXIT
@@ -877,31 +896,50 @@
                 let replayTimer = null;
         let replayMoves = [];
         let replayIndex = 0;
-        
+        let isReplaying = false;
+
+        function updateReplayUI() {
+            if (isReplaying) {
+                document.getElementById('replay-play-icon').innerText = 'pause';
+                document.getElementById('replay-play-text').innerText = 'PAUSE';
+            } else {
+                document.getElementById('replay-play-icon').innerText = 'play_arrow';
+                document.getElementById('replay-play-text').innerText = 'PLAY';
+            }
+        }
+
         function reviewMatch() {
             document.getElementById('gameover-overlay').classList.add('hidden');
             state.gameMode = 'analysis';
             state.isAnalysisEnabled = true;
             
             // Get all moves from the game
-            const history = state.game.history();
-            // Take the last 25 moves
-            const startHistory = history.length > 25 ? history.slice(0, history.length - 25) : [];
-            replayMoves = history.length > 25 ? history.slice(history.length - 25) : history;
+            replayMoves = state.game.history();
             
-            // Reset the game to the point before the last 25 moves
+            // Reset the game to the initial state
             const replayGame = new Chess();
             try { replayGame.load(state.initialFenRef); } catch(e) {}
-            startHistory.forEach(m => replayGame.move(m));
             
             state.game = replayGame;
             state.fenInput = state.game.fen();
             updateUI();
             renderBoard();
             
+            // Show replay modal
+            document.getElementById('modal-replay').classList.remove('hidden');
+            document.getElementById('modal-replay').classList.add('flex');
+
             // Start replay
             replayIndex = 0;
+            isReplaying = true;
+            updateReplayUI();
+            startReplayTimer();
+        }
+
+        function startReplayTimer() {
             clearInterval(replayTimer);
+            if (!isReplaying) return;
+
             replayTimer = setInterval(() => {
                 if (replayIndex < replayMoves.length) {
                     const move = state.game.move(replayMoves[replayIndex]);
@@ -913,8 +951,64 @@
                     replayIndex++;
                 } else {
                     clearInterval(replayTimer);
+                    isReplaying = false;
+                    updateReplayUI();
                 }
             }, 1200);
+        }
+
+        function toggleReplayPlay() {
+            isReplaying = !isReplaying;
+            updateReplayUI();
+            if (isReplaying) {
+                if (replayIndex >= replayMoves.length) {
+                    // Reset if at the end
+                    replayIndex = 0;
+                    const replayGame = new Chess();
+                    try { replayGame.load(state.initialFenRef); } catch(e) {}
+                    state.game = replayGame;
+                    state.fenInput = state.game.fen();
+                    renderBoard();
+                    updateUI();
+                    triggerEval();
+                }
+                startReplayTimer();
+            } else {
+                clearInterval(replayTimer);
+            }
+        }
+
+        function prevReplayMove() {
+            if (replayIndex > 0) {
+                state.game.undo();
+                replayIndex--;
+                playSound('move');
+                state.fenInput = state.game.fen();
+                renderBoard();
+                updateUI();
+                triggerEval();
+            }
+        }
+
+        function nextReplayMove() {
+            if (replayIndex < replayMoves.length) {
+                const move = state.game.move(replayMoves[replayIndex]);
+                if (move) playMoveSound(state.game, move);
+                replayIndex++;
+                state.fenInput = state.game.fen();
+                renderBoard();
+                updateUI();
+                triggerEval();
+            }
+        }
+
+        function closeReplay() {
+            clearInterval(replayTimer);
+            isReplaying = false;
+            document.getElementById('modal-replay').classList.add('hidden');
+            document.getElementById('modal-replay').classList.remove('flex');
+            // Re-evaluate current position so UI matches
+            triggerEval();
         }
 
         function endSession() {
