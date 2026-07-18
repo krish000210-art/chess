@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>NeurO Chess </title>
     <!-- Favicon -->
     <link rel="icon" href="https://img.icons8.com/nolan/1200/chess-com.jpg" type="image/jpeg">
@@ -98,7 +98,7 @@
             top: 0;
             left: 0;
             width: 100vw;
-            height: 100vh;
+            height: 100dvh;
             background-color: rgba(255, 165, 0, 0); /* Invisible by default */
             mix-blend-mode: multiply;
             z-index: 9999;
@@ -171,7 +171,7 @@
         </div>
     </header>
 
-    <aside class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-[#ffffff] border-r-4 border-[#000000] hidden lg:flex flex-col py-8 px-0 z-40 shadow-[4px_0px_0px_0px_rgba(0,0,0,1)]">
+    <aside class="fixed left-0 top-16 h-[calc(100dvh-4rem)] w-64 bg-[#ffffff] border-r-4 border-[#000000] hidden lg:flex flex-col py-8 px-0 z-40 shadow-[4px_0px_0px_0px_rgba(0,0,0,1)]">
         <div class="px-8 mb-12">
             <div class="font-['Space_Grotesk'] font-black text-lg text-[#000000] bg-[#3B82F6] text-white inline-block px-2 border-2 border-[#000000] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] type-effect">STRATEGIC_UNIT</div>
             <div class="font-['Space_Grotesk'] uppercase text-[0.75rem] tracking-tight text-[#000000] font-black mt-2 truncate">ALIAS // <span id="sidebar-alias"></span></div>
@@ -321,7 +321,7 @@
         </div>
     </div>
 
-    <main class="relative lg:ml-64 min-h-[calc(100vh-4rem)] pb-20 lg:pb-0 z-10">
+    <main class="relative lg:ml-64 min-h-[calc(100dvh-4rem)] pb-20 lg:pb-0 z-10">
         
         <div id="view-home">
             <section class="relative pt-16 pb-24 px-4 sm:px-6 lg:px-24 border-none text-[#191c1d]">
@@ -428,7 +428,7 @@
             </footer>
         </div>
 
-        <div id="view-matches" class="hidden py-12 px-6 lg:px-24 w-full max-w-6xl mx-auto min-h-[calc(100vh-4rem)] flex flex-col text-[#191c1d] relative z-10">
+        <div id="view-matches" class="hidden py-12 px-6 lg:px-24 w-full max-w-6xl mx-auto min-h-[calc(100dvh-4rem)] flex flex-col text-[#191c1d] relative z-10">
             <div class="mb-8 border-b-4 border-[#000000] pb-6 bg-[#ffffff] p-6 border-2 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] fade-in">
                 <h1 class="font-['Space_Grotesk'] font-black text-4xl uppercase tracking-tighter text-[#000000] flex items-center gap-4">
                     <span class="material-symbols-outlined text-5xl text-[#000000]">history</span>
@@ -448,7 +448,7 @@
         </div>
 
         <div id="view-game" class="hidden">
-            <section id="game-section" class="py-4 sm:py-8 px-2 sm:px-4 lg:px-12 w-full max-w-5xl mx-auto flex flex-col items-center text-[#191c1d] min-h-[calc(100vh-4rem)] relative z-10 fade-in">
+            <section id="game-section" class="py-4 sm:py-8 px-2 sm:px-4 lg:px-12 w-full max-w-5xl mx-auto flex flex-col items-center text-[#191c1d] min-h-[calc(100dvh-4rem)] relative z-10 fade-in">
                 
                 <div id="gameover-overlay" class="fixed inset-0 bg-[#000000]/60 flex items-center justify-center z-[150] backdrop-blur-sm hidden flex-col">
                     <div class="bg-[#FF5722] text-[#000000] border-4 border-[#000000] p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] anim-stamp flex flex-col items-center">
@@ -502,7 +502,7 @@
                         </div>
 
                         <div class="p-3 bg-[#e1e3e4] border-4 border-[#000000] shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] relative flex-shrink-0 max-w-full">
-                            <canvas id="chess-canvas" class="bg-[#ffffff] cursor-pointer border-4 border-[#000000] block max-w-full"></canvas>
+                            <canvas id="chess-canvas" class="touch-none bg-[#ffffff] cursor-pointer border-4 border-[#000000] block max-w-full"></canvas>
                             <div class="absolute -bottom-6 -right-6 p-2 bg-[#ffffff] text-[#000000] border-4 border-[#000000] font-['Space_Grotesk'] font-black text-[0.6rem] uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] pointer-events-none hidden md:block">MATRIX_ACTIVE</div>
                         </div>
                     </div>
@@ -629,6 +629,7 @@
             marquee.innerHTML = mContent;
 
             window.addEventListener('resize', renderBoard);
+            window.addEventListener('orientationchange', () => setTimeout(renderBoard, 100));
             if (window.matchMedia("(min-width: 768px)").matches) {
                 window.addEventListener('mousemove', (e) => {
                     requestAnimationFrame(() => {
@@ -641,6 +642,8 @@
             canvas.addEventListener('pointerdown', handlePointerDown);
             canvas.addEventListener('pointermove', handlePointerMove);
             window.addEventListener('pointerup', handlePointerUp);
+            window.addEventListener('pointercancel', handlePointerUp);
+            canvas.addEventListener('contextmenu', e => e.preventDefault());
             document.getElementById('fen-input').addEventListener('input', (e) => state.fenInput = e.target.value);
             buildSettings();
         }
@@ -1236,7 +1239,7 @@
             if (state.gameMode) {
                 const sectionClasses = state.isFullscreen 
                     ? "fixed inset-0 z-[100] bg-[#f8f9fa] flex flex-col items-center p-4 md:p-8 overflow-y-auto bg-blueprint-grid scanlines text-[#191c1d]"
-                    : "py-4 sm:py-8 px-2 sm:px-4 lg:px-12 w-full max-w-5xl mx-auto flex flex-col items-center text-[#191c1d] min-h-[calc(100vh-4rem)] relative z-10 fade-in";
+                    : "py-4 sm:py-8 px-2 sm:px-4 lg:px-12 w-full max-w-5xl mx-auto flex flex-col items-center text-[#191c1d] min-h-[calc(100dvh-4rem)] relative z-10 fade-in";
                 document.getElementById('game-section').className = sectionClasses;
                 document.getElementById('game-top-bar').className = `w-full flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-8 gap-4 bg-[#ffffff] p-2 sm:p-4 border-4 border-[#000000] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${state.isFullscreen ? 'max-w-5xl mx-auto' : ''}`;
                 document.getElementById('canvas-container').className = `w-full flex justify-center mt-2 ${state.isFullscreen ? 'max-w-5xl mx-auto' : ''}`;
