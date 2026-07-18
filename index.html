@@ -754,12 +754,17 @@
             }, 400);
         }
 
-        function checkGameOver() {
-            if (state.game.game_over() && !state.gameEndedTracked && state.gameMode !== 'analysis') {
+        function checkGameOver(forceEnd = false) {
+            if ((state.game.game_over() || forceEnd) && !state.gameEndedTracked && state.gameMode !== 'analysis') {
                 state.gameEndedTracked = true;
                 const isWin = state.game.in_checkmate() && state.game.turn() !== state.playerColor;
                 const isDraw = state.game.in_draw() || state.game.in_stalemate() || state.game.in_threefold_repetition();
-                let opponent = '', resultStr = isWin ? 'WIN' : isDraw ? 'DRAW' : 'LOSS';
+                let opponent = '', resultStr;
+                if (state.gameMode === 'elotest' && forceEnd && !state.game.game_over()) {
+                    resultStr = 'COMPLETE';
+                } else {
+                    resultStr = isWin ? 'WIN' : isDraw ? 'DRAW' : 'LOSS';
+                }
                 if (state.gameMode === 'elotest') {
                     opponent = 'ELO_TEST_SYSTEM';
                     const acpl = state.cplMoves > 0 ? state.cplTotal / state.cplMoves : 100;
