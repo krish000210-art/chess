@@ -502,7 +502,7 @@
                         </div>
 
                         <div class="p-3 bg-[#e1e3e4] border-4 border-[#000000] shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] relative flex-shrink-0 max-w-full">
-                            <canvas id="chess-canvas" class="bg-[#ffffff] cursor-pointer border-4 border-[#000000] block max-w-full"></canvas>
+                            <canvas id="chess-canvas" class="touch-none bg-[#ffffff] cursor-pointer border-4 border-[#000000] block max-w-full"></canvas>
                             <div class="absolute -bottom-6 -right-6 p-2 bg-[#ffffff] text-[#000000] border-4 border-[#000000] font-['Space_Grotesk'] font-black text-[0.6rem] uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] pointer-events-none hidden md:block">MATRIX_ACTIVE</div>
                         </div>
                     </div>
@@ -641,6 +641,8 @@
             canvas.addEventListener('pointerdown', handlePointerDown);
             canvas.addEventListener('pointermove', handlePointerMove);
             window.addEventListener('pointerup', handlePointerUp);
+            window.addEventListener('pointercancel', handlePointerUp);
+            canvas.addEventListener('contextmenu', e => e.preventDefault());
             document.getElementById('fen-input').addEventListener('input', (e) => state.fenInput = e.target.value);
             buildSettings();
         }
